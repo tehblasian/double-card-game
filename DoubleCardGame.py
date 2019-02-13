@@ -2,14 +2,23 @@ from board import Board
 from Player import Player
 
 class DoubleCardGame:
+    _MAX_ROUNDS = 60
+
     def __init__(self, board, players):
         self._board = board
         self._players = players
         self._hasWinner = False
 
     def playGame(self):
+        rounds = 0
         while not self._hasWinner:
+            if not rounds < DoubleCardGame._MAX_ROUNDS:
+                print('The maximum number of turns ({}) has been reached!\nThe game has ended in a draw.'.format(DoubleCardGame._MAX_ROUNDS))
+                break
+ 
             self._playRound()
+            rounds += 1
+
 
     def getPlayers(self):
         return self._players
@@ -35,7 +44,7 @@ if __name__ == '__main__':
     player1_name = input('\nEnter player 1\'s name: ')
     player1_marker = input('\nSelect player 1\'s marker:\n1 - Dots \n2 - Color\n')
     player2_marker = None
-    
+
     if int(player1_marker) == 1:
         player1_marker = Player.Marker.DOTS
         player2_marker = Player.Marker.COLOR
@@ -52,7 +61,3 @@ if __name__ == '__main__':
     game = DoubleCardGame(board, [player1, player2])
 
     game.playGame()
-        
-        
-
-
