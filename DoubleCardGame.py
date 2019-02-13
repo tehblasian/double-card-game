@@ -22,6 +22,7 @@ class DoubleCardGame:
             if player.isWinner():
                 self._hasWinner = True
                 print('{} has won!'.format(player.getName()))
+                break
 
 if __name__ == '__main__':
     print('Let\'s play DoubleCardGame!\n')
@@ -34,6 +35,7 @@ if __name__ == '__main__':
     player1_name = input('\nEnter player 1\'s name: ')
     player1_marker = input('\nSelect player 1\'s marker:\n1 - Dots \n2 - Color\n')
     player2_marker = None
+    
     if int(player1_marker) == 1:
         player1_marker = Player.Marker.DOTS
         player2_marker = Player.Marker.COLOR
