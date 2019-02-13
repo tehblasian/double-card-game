@@ -9,8 +9,47 @@ class Card:
     def __init__(self, state, locationArr):
         self._state = state
         self._location = ''.join(locationArr)
+        self._segments = self._createCardSegments(state, locationArr)
         
-        col = locationArr[0]
+        Card._card_id += 1
+
+    def getLocation(self):
+        return self._location
+
+    def getState(self):
+        return self._state
+
+    def getSegments(self):
+        return self._segments
+
+    def setLocation(self, location):
+        self._location = location
+    
+    def setState(self, state):
+        self._state = state
+
+    def _getXLocationIndexFromLetter(self, rowLetter):
+        indices = {
+            'A': 1,
+            'B': 2,
+            'C': 3,
+            'D': 4,
+            'E': 5,
+            'F': 6,
+            'G': 7,
+            'H': 8,
+        }
+
+        return indices[rowLetter]
+
+    def _getAdjacentXLocation(self, rowIndex):
+        return int(rowIndex) + 1
+    
+    def _getYLocationIndexBelow(self, colIndex):
+        return int(colIndex) - 1
+
+    def _createCardSegments(self, state, locationArr):
+        col = locationArr[0].upper()
         row = locationArr[1]
 
         first_segment = None
@@ -57,44 +96,8 @@ class Card:
             secondSegmentYLocation = self._getYLocationIndexBelow(row)
             second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
-        self._segments = [first_segment, second_segment]
-        Card._card_id += 1
-
-    def getLocation(self):
-        return self._location
-
-    def getState(self):
-        return self._state
-
-    def getSegments(self):
-        return self._segments
-
-    def setLocation(self, location):
-        self._location = location
+        return [first_segment, second_segment]
     
-    def setState(self, state):
-        self._state = state
-
-    def _getXLocationIndexFromLetter(self, rowLetter):
-        indices = {
-            'A': 1,
-            'B': 2,
-            'C': 3,
-            'D': 4,
-            'E': 5,
-            'F': 6,
-            'G': 7,
-            'H': 8,
-        }
-
-        return indices[rowLetter]
-
-    def _getAdjacentXLocation(self, rowIndex):
-        return int(rowIndex) + 1
-    
-    def _getYLocationIndexBelow(self, colIndex):
-        return int(colIndex) - 1
-
     def __str__(self):
         return '''
         State: {}
