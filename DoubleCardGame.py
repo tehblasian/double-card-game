@@ -5,9 +5,10 @@ class DoubleCardGame:
     def __init__(self, board, players):
         self._board = board
         self._players = players
+        self._hasWinner = False
 
     def playGame(self):
-        while True:
+        while not self._hasWinner:
             self._playRound()
 
     def getPlayers(self):
@@ -17,6 +18,10 @@ class DoubleCardGame:
         for player in self._players:
             player.takeTurn()
             self._board.printBoard()
+
+            if player.isWinner():
+                self._hasWinner = True
+                print('{} has won!'.format(player.getName()))
 
 if __name__ == '__main__':
     print('Let\'s play DoubleCardGame!\n')
