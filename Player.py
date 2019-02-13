@@ -9,12 +9,16 @@ class Player:
         self._marker = marker
         self._board = board
         self._cards = []
+        self._won = False
     
     def getName(self):
         return self._name
 
     def getMarker(self):
         return self._marker
+
+    def isWinner(self):
+        return self._won
 
     def takeTurn(self):
         tries = 0
@@ -35,6 +39,9 @@ class Player:
                 print('Illegal move!\n')
                 tries = tries + 1
             else:
+                won = self._board.isWinner(self, card)
+                if won:
+                    self._won = True
                 break
 
         return

@@ -108,7 +108,7 @@ class Board:
                 return False
         return True
         
-        
+
     #this is the method you call not the sub-one except if you need them
     #Can use this method twice for each Player for the same card put in the board
     def isWinner(self,player,card) :
