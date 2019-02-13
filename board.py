@@ -116,15 +116,16 @@ class Board:
         secondSegment = card.getSegments()[1]
         if self.horizontalWin(player,firstSegment,secondSegment) or self.verticalWin(player,firstSegment,secondSegment) or self.diagonalWin(player) : 
             return True
+            
         return False
 
     def horizontalWin(self,player,firstSegment,secondSegment) :
         if player.getMarker() == Player.Marker.DOTS :
-            if self.horizontalCheckDots(firstSegment,Card.CardSymbol.WHITE_DOT) or self.horizontalCheckDots(secondSegment,Card.CardSymbol.WHITE_DOT) :
+            if self.horizontalCheckDots(firstSegment, 'WDOT') or self.horizontalCheckDots(secondSegment, 'BDOT') :
                 return True
             return False
         else :
-            if self.horizontalCheckColors(firstSegment,Card.CardColor.WHITE) or self.horizontalCheckColors(secondSegment,Card.CardColor.WHITE) :
+            if self.horizontalCheckColors(firstSegment, 'WHITE') or self.horizontalCheckColors(secondSegment, 'RED') :
                 return True
             return False    
 
@@ -166,11 +167,11 @@ class Board:
         
     def verticalWin(self,player,firstSegment,secondSegment) :
         if player.getMarker() == Player.Marker.DOTS :
-            if self.verticalCheckDots(firstSegment,Card.CardSymbol.WHITE_DOT) or self.verticalCheckDots(secondSegment,Card.CardSymbol.WHITE_DOT) :
+            if self.verticalCheckDots(firstSegment, 'WDOT') or self.verticalCheckDots(secondSegment, 'BDOT') :
                 return True
             return False
         else :
-            if self.verticalCheckColors(firstSegment,Card.CardColor.WHITE) or self.verticalCheckColors(secondSegment,Card.CardColor.WHITE) :
+            if self.verticalCheckColors(firstSegment, 'WHITE') or self.verticalCheckColors(secondSegment, 'RED') :
                 return True
             return False  
         pass
