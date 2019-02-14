@@ -3,6 +3,7 @@ from Player import Player
 
 class DoubleCardGame:
     _MAX_ROUNDS = 60
+    _MAX_CARDS_PER_PLAYER = 1
 
     def __init__(self, board, players):
         self._board = board
@@ -54,9 +55,9 @@ if __name__ == '__main__':
     
     player2_name = input('\nEnter player 2\'s name: \n')
 
-    board = Board()
-    player1 = Player(player1_name, player1_marker, board)
-    player2 = Player(player2_name, player2_marker, board)
+    board = Board(DoubleCardGame._MAX_CARDS_PER_PLAYER * 2)
+    player1 = Player(player1_name, player1_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
+    player2 = Player(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     
     game = DoubleCardGame(board, [player1, player2])
 

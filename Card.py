@@ -10,7 +10,7 @@ class Card:
         self._state = state
         self._location = ''.join(locationArr)
         self._segments = self._createCardSegments(state, locationArr)
-        
+
         Card._card_id += 1
 
     def getLocation(self):
@@ -106,6 +106,16 @@ class Card:
         Segments: \n{}\n{}
         '''.format(self._state, self._location, self._card_id, str(self._segments[0]), str(self._segments[1]))
 
+    def __eq__(self, otherCard):
+        if otherCard is None:
+            return False
+
+        return (self._card_id == otherCard._card_id
+                and self._location == otherCard._location
+                and self._state == otherCard._state
+                and self._segments[0] == otherCard._segments[0]
+                and self._segments[1] == otherCard._segments[1])
+
     # def _getAdjacentLocation(self, state, col, row):
 
     #     right = {
@@ -165,4 +175,14 @@ class Card:
             X Location: {}
             Y Location: {}
             '''.format(self._parent, self._color, self._symbol, self._locationX, self._locationY)
+
+        def __eq__(self, otherSegment):
+            if otherSegment is None:
+                return False
+
+            return (self._parent == otherSegment._parent
+                    and self._color == otherSegment._color
+                    and self._symbol == otherSegment._symbol
+                    and self._locationX == otherSegment._locationX
+                    and self._locationY == otherSegment._locationY)
         
