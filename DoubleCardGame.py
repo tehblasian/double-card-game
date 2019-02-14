@@ -1,9 +1,9 @@
-from board import Board
+from Board import Board
 from Player import Player
 
 class DoubleCardGame:
     _MAX_ROUNDS = 60
-    _MAX_CARDS_PER_PLAYER = 1
+    _MAX_CARDS_PER_PLAYER = 12
 
     def __init__(self, board, players):
         self._board = board
