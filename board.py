@@ -5,8 +5,11 @@ class Board:
     
     #initializing the board 8x12
     #ititializing first column with NUMBERS and first row with LETTERS
-    def __init__(self):
+    def __init__(self, maxCardsAllowed):
         self.board = [[None for column in range(13)] for row in range(9)]
+        self._cards = []
+        self._lastCardPlayed = None
+        self._MAX_CARDS_ALLOWED = maxCardsAllowed
 
         for row in range(0,12):
             self.board[0][row] = 12-row
@@ -38,23 +41,26 @@ class Board:
                         printRow += "  "+str(self.board[row][column].getColor()[0:1])+"_"+str(self.board[row][column].getSymbol()[0:2])+"  |"
             print(printRow)
             
+    def getCards(self):
+        return self._cards
+    
     #this is the method you call not the sub-one except if you need them
-    def addCard(self,card):
+    def addCard(self, card, recycled=False):
         firstSegment = card.getSegments()[0]
         secondSegment = card.getSegments()[1]
 
-        print(firstSegment)
-        print(secondSegment)
-
-        if self.valideSegmentPosition(firstSegment,secondSegment) and self.valideSegmentPosition(secondSegment,firstSegment) :
+        if self.validateSegmentPosition(firstSegment,secondSegment) and self.validateSegmentPosition(secondSegment,firstSegment):
             self.addCardOnBoard(firstSegment,secondSegment)
+            if not recycled:
+                self._cards.append(card)
+
+            self._lastCardPlayed = card
             return True # can also return "Card added on board"
+            
         return False # can also return "Move cannot be done"
 
-    def valideSegmentPosition(self,segment1,segmentTocompare):
-        if self.illegalPosition(segment1,segmentTocompare) :
-            return False
-        return True
+    def validateSegmentPosition(self,segment1,segmentTocompare):
+        return not self.illegalPosition(segment1,segmentTocompare)
 
     def illegalPosition(self,segment1,segmentTocompare):
         positionX = int(segment1.getLocationX())
@@ -74,41 +80,68 @@ class Board:
     def addCardOnBoard(self,firstSegment,secondSegment):
         self.board[firstSegment.getLocationX()][firstSegment.getLocationY()] = firstSegment
         self.board[secondSegment.getLocationX()][secondSegment.getLocationY()] = secondSegment
-    
-    #this is the method you call not the sub-one except if you need them
-    def moveCard(self,card,firstSegmentXLocation,firstSegmentYLocation,secondSegmentXLocation,secondSegmentYLocation):
-        firstSegment = card.getSegments()[0]
-        secondSegment = card.getSegments()[1]
-        if self.canMoveCard(firstSegment,firstSegmentXLocation,firstSegmentYLocation,secondSegmentXLocation,secondSegmentYLocation) and self.canMoveCard(secondSegment,secondSegmentXLocation,secondSegmentYLocation,firstSegmentXLocation,firstSegmentYLocation) :
-            self.board[firstSegmentXLocation][firstSegmentYLocation] =firstSegment
-            self.board[secondSegmentXLocation][secondSegmentYLocation] =secondSegment
-            self.board[firstSegment.getLocationX()][firstSegment.getLocationY()] =None
-            self.board[secondSegment.getLocationX()][secondSegment.getLocationY()] =None
 
-            return True
-        return False
-        
-    def canMoveCard(self,segment,newLocationX,newLocationY,newLocationXSecond,newLocationYSecond):
-        if newLocationX <=0 or newLocationX > 8 or newLocationY <= 0 or newLocationY >12 :
-            #not inside the Board
+    def recycleCard(self, oldCard, newCard):
+        recycled = self.addCard(newCard, recycled=True)
+
+        # if the card was not recycled, revert the card to its original state before modification
+        if not recycled:
+            newCard = oldCard
             return False
-        if segment.getLocationX() == newLocationX and segment.getLocationY() == newLocationY:
-            #same location
-            return False
-        if self.board[segment.getLocationX()][segment.getLocationY()-1] != None and self.board[segment.getLocationX()][segment.getLocationY() -1].getParent() != segment.getParent():
-            #check if the block onTopOf is from the same parents
-            
-            return False
-        if self.board[newLocationX][newLocationY] != None :
-            #check if the new location is empty
-            
-            return False
-        if self.board[newLocationX][newLocationY+1] == None and newLocationY+1 != 12:
-            if newLocationX != newLocationXSecond and newLocationXSecond != newLocationY+1:
-                return False
+
+        # delete the old card from the board
+        segment1, segment2 = oldCard.getSegments()
+        self.board[segment1.getLocationX()][segment1.getLocationY()] = None
+        self.board[segment2.getLocationX()][segment2.getLocationY()] = None
+
+        self._lastCardPlayed = newCard
+
         return True
-        
 
+    def getCardToRecycle(self, fromLocationArr):
+        indices = {
+            'A': 1,
+            'B': 2,
+            'C': 3,
+            'D': 4,
+            'E': 5,
+            'F': 6,
+            'G': 7,
+            'H': 8,
+        }
+
+        first_segment_x_location_letter = fromLocationArr[0]
+        first_segment_y_location = 12 - int(fromLocationArr[1])
+        second_segment_x_location_letter = fromLocationArr[2]
+        second_segment_y_location = 12 - int(fromLocationArr[3])
+
+        first_segment_x_location = indices[first_segment_x_location_letter.upper()]
+        second_segment_x_location = indices[second_segment_x_location_letter.upper()]
+
+        # find the card to recycle 
+        card_to_recycle = None
+        for card in self._cards:
+            segment1, segment2 = card.getSegments()
+            if (segment1.getLocationX() == first_segment_x_location 
+                and segment1.getLocationY() == first_segment_y_location
+                and segment2.getLocationX() == second_segment_x_location
+                and segment2.getLocationY() == second_segment_y_location):
+                    card_to_recycle = card
+                    break
+        
+        # check if recycling the card does not leave the board in an illegal state
+        if self._canRecycleCard(card_to_recycle):
+            return card_to_recycle
+    
+        return None
+
+    def _canRecycleCard(self, card):
+        segment1, segment2 = card.getSegments()
+        return (len(self._cards) == self._MAX_CARDS_ALLOWED
+                and self.board[segment1.getLocationX()][segment1.getLocationY() - 1] is None 
+                and self.board[segment2.getLocationX()][segment2.getLocationY() - 1] is None
+                and card != self._lastCardPlayed)
+        
     #this is the method you call not the sub-one except if you need them
     #Can use this method twice for each Player for the same card put in the board
     def isWinner(self,player,card) :
