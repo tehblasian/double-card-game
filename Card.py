@@ -48,6 +48,9 @@ class Card:
     def _getYLocationIndexBelow(self, colIndex):
         return int(colIndex) - 1
 
+    def _getYLocationIndexAbove(self, colIndex):
+        return int(colIndex) + 1
+
     def _createCardSegments(self, state, locationArr):
         col = locationArr[0].upper()
         row = locationArr[1]
@@ -62,9 +65,9 @@ class Card:
             second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, secondSegmentXLocation, row)
 
         if state == 2:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
-            secondSegmentYLocation = self._getYLocationIndexBelow(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
+            secondSegmentYLocation = self._getYLocationIndexAbove(row)
+            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
         if state == 3:
             first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
@@ -72,9 +75,9 @@ class Card:
             second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, secondSegmentXLocation, row)
 
         if state == 4:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
-            secondSegmentYLocation = self._getYLocationIndexBelow(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
+            secondSegmentYLocation = self._getYLocationIndexAbove(row)
+            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
         if state == 5:
             first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
@@ -82,9 +85,9 @@ class Card:
             second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, secondSegmentXLocation, row)
 
         if state == 6:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
-            secondSegmentYLocation = self._getYLocationIndexBelow(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
+            secondSegmentYLocation = self._getYLocationIndexAbove(row)
+            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
         if state == 7:
             first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
@@ -92,9 +95,9 @@ class Card:
             second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, secondSegmentXLocation, row)
 
         if state == 8:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
-            secondSegmentYLocation = self._getYLocationIndexBelow(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
+            secondSegmentYLocation = self._getYLocationIndexAbove(row)
+            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
         return [first_segment, second_segment]
     
