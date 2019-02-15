@@ -20,7 +20,6 @@ class DoubleCardGame:
             self._playRound()
             rounds += 1
 
-
     def getPlayers(self):
         return self._players
 
@@ -28,10 +27,15 @@ class DoubleCardGame:
         for player in self._players:
             player.takeTurn()
             self._board.printBoard()
-
-            if player.isWinner():
-                self._hasWinner = True
-                print('{} has won!'.format(player.getName()))
+            if self._board.hasWinner():
+                self._hasWinner = True 
+                player1, player2 = self._players
+                winning_marker = self._board.getWinner()
+                if player1.getMarker() == winning_marker:
+                    print('{} has won!'.format(player1.getName()))
+                else:
+                    print('{} has won!'.format(player2.getName()))
+            
                 break
 
 if __name__ == '__main__':

@@ -19,9 +19,6 @@ class Player:
     def getMarker(self):
         return self._marker
 
-    def isWinner(self):
-        return self._won
-
     def takeTurn(self):
         tries = 0
 
@@ -37,12 +34,11 @@ class Player:
 
             success = False
             failure_message = ''
-            card = None
             if moveType == '0':
                 if len(self._cards) < self._maxCardsAllowed:
                     state = moveArr[1]
                     location = moveArr[2:]
-                    success, card = self._regularMove(state, location)
+                    success = self._regularMove(state, location)
                 else:
                     failure_message = 'You have no more cards left. Please recycle a card'
             else:
@@ -50,7 +46,7 @@ class Player:
                     fromLocationArr = moveArr[:4]
                     state = moveArr[4]
                     toLocationArr = moveArr[5:]
-                    success, card = self._recycleMove(fromLocationArr, state, toLocationArr)
+                    success = self._recycleMove(fromLocationArr, state, toLocationArr)
                 else:
                     failure_message = 'You cannot recycle until you have run out of cards'
 
@@ -58,9 +54,6 @@ class Player:
                 print('Illegal move! {}\n'.format(failure_message))
                 tries = tries + 1
             else:
-                won = self._board.isWinner(self, card)
-                if won:
-                    self._won = True
                 break
 
         return
@@ -69,7 +62,7 @@ class Player:
         card = Card(int(state), location)
         self._cards.append(card)
 
-        return [self._board.addCard(card), card]
+        return self._board.addCard(card)
 
     def _recycleMove(self, fromLocationArr, state, toLocationArr):
         card_to_recycle = self._board.getCardToRecycle(fromLocationArr)
@@ -81,6 +74,6 @@ class Player:
             new_segments = card_to_recycle._createCardSegments(int(state), toLocationArr)
             card_to_recycle._segments = new_segments
 
-            return [self._board.recycleCard(tmp, card_to_recycle), card_to_recycle]
+            return self._board.recycleCard(tmp, card_to_recycle)
         
         return [False, None]
