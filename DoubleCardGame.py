@@ -29,14 +29,21 @@ class DoubleCardGame:
             self._board.printBoard()
             if self._board.hasWinner():
                 self._hasWinner = True 
+
+                winning_markers = self._board.getWinningMarkers()
                 player1, player2 = self._players
-                winning_card = self._board.getLastCardPlayed()
-                
-                if winning_card in player1.getCards():
-                    print('{} has won!'.format(player1.getName()))
-                else:
-                    print('{} has won!'.format(player2.getName()))
-            
+
+                # case 1: two winners, winner is the person who last played
+                # case 2: 1 winner, winner is the person whos marker corresponds to the winning marker
+
+                if len(winning_markers) == 2:
+                    print('{} won!'.format(player.getName()))
+                elif len(winning_markers) == 1:
+                    if player1.getMarker() == winning_markers[0]:
+                        print('{} has won!'.format(player1.getName()))
+                    else:
+                        print('{} has won!'.format(player2.getName()))
+
                 break
 
 if __name__ == '__main__':
