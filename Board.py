@@ -5,39 +5,39 @@ class Board:
     #initializing the board 8x12
     #ititializing first column with NUMBERS and first row with LETTERS
     def __init__(self, maxCardsAllowed):
-        self.board = [[None for column in range(13)] for row in range(9)]
+        self._board = [[None for column in range(13)] for row in range(9)]
         self._cards = []
         self._lastCardPlayed = None
         self._MAX_CARDS_ALLOWED = maxCardsAllowed
 
         for row in range(0,12):
-            self.board[0][row] = 12-row
+            self._board[0][row] = 12-row
 
-        self.board[1][12] = " A  "
-        self.board[2][12] = " B  "
-        self.board[3][12] = " C  "
-        self.board[4][12] = " D  "
-        self.board[5][12] = " E  "
-        self.board[6][12] = " F  "
-        self.board[7][12] = " G  "
-        self.board[8][12] = " H  "
+        self._board[1][12] = " A  "
+        self._board[2][12] = " B  "
+        self._board[3][12] = " C  "
+        self._board[4][12] = " D  "
+        self._board[5][12] = " E  "
+        self._board[6][12] = " F  "
+        self._board[7][12] = " G  "
+        self._board[8][12] = " H  "
         
-        self.board[0][12] = 0
+        self._board[0][12] = 0
     
     def printBoard(self):
         for column in range(13):
             printRow = ""
             for row in range(9):
                 if column == 12 or row == 0:
-                    if row == 0 and self.board[row][column] <10:
-                        printRow += "  "+str(self.board[row][column])+"   |"
+                    if row == 0 and self._board[row][column] <10:
+                        printRow += "  "+str(self._board[row][column])+"   |"
                     else:
-                        printRow += "  "+str(self.board[row][column])+"  |"
+                        printRow += "  "+str(self._board[row][column])+"  |"
                 else:
-                    if self.board[row][column] == None:
-                        printRow += "  "+str(self.board[row][column])+"  |"
+                    if self._board[row][column] == None:
+                        printRow += "  "+str(self._board[row][column])+"  |"
                     else:
-                        printRow += "  "+str(self.board[row][column].getColor()[0:1])+"_"+str(self.board[row][column].getSymbol()[0:2])+"  |"
+                        printRow += "  "+str(self._board[row][column].getColor()[0:1])+"_"+str(self._board[row][column].getSymbol()[0:2])+"  |"
             print(printRow)
             
     def getCards(self):
@@ -50,8 +50,8 @@ class Board:
         firstSegment = card.getSegments()[0]
         secondSegment = card.getSegments()[1]
 
-        if self.validateSegmentPosition(firstSegment,secondSegment) and self.validateSegmentPosition(secondSegment,firstSegment):
-            self.addCardOnBoard(firstSegment,secondSegment)
+        if self._validateSegmentPosition(firstSegment,secondSegment) and self._validateSegmentPosition(secondSegment,firstSegment):
+            self._addCardOnBoard(firstSegment,secondSegment)
             if not recycled:
                 self._cards.append(card)
 
@@ -59,28 +59,6 @@ class Board:
             return True
             
         return False
-
-    def validateSegmentPosition(self, segment1, segmentTocompare):
-        return not self.illegalPosition(segment1,segmentTocompare)
-
-    def illegalPosition(self,segment1,segmentTocompare):
-        positionX = int(segment1.getLocationX())
-        positionY = int(segment1.getLocationY())
-
-        if positionX <= 0 or positionX > 8 or positionY <= 0 or positionY > 12:
-            return True
-
-        if self.board[positionX][positionY] != None:
-            return True
-
-        if self.board[positionX][positionY + 1] == None and segmentTocompare.getLocationY() != positionY + 1:
-            return True
-            
-        return False
-
-    def addCardOnBoard(self, firstSegment, secondSegment):
-        self.board[firstSegment.getLocationX()][firstSegment.getLocationY()] = firstSegment
-        self.board[secondSegment.getLocationX()][secondSegment.getLocationY()] = secondSegment
 
     def recycleCard(self, oldCard, newCard):
         recycled = self.addCard(newCard, recycled=True)
@@ -92,8 +70,8 @@ class Board:
 
         # delete the old card from the board
         segment1, segment2 = oldCard.getSegments()
-        self.board[segment1.getLocationX()][segment1.getLocationY()] = None
-        self.board[segment2.getLocationX()][segment2.getLocationY()] = None
+        self._board[segment1.getLocationX()][segment1.getLocationY()] = None
+        self._board[segment2.getLocationX()][segment2.getLocationY()] = None
 
         self._lastCardPlayed = newCard
 
@@ -136,30 +114,51 @@ class Board:
     
         return None
 
+    def hasWinner(self):
+        firstSegment, secondSegment = self._lastCardPlayed.getSegments()
+        return self._horizontalWin(firstSegment, secondSegment) or self._verticalWin(firstSegment, secondSegment) or self._diagonalWin()
+    
+    def _validateSegmentPosition(self, segment1, segmentTocompare):
+        return not self._illegalPosition(segment1,segmentTocompare)
+
+    def _illegalPosition(self, segment1, segmentTocompare):
+        positionX = int(segment1.getLocationX())
+        positionY = int(segment1.getLocationY())
+
+        if positionX <= 0 or positionX > 8 or positionY <= 0 or positionY > 12:
+            return True
+
+        if self._board[positionX][positionY] != None:
+            return True
+
+        if self._board[positionX][positionY + 1] == None and segmentTocompare.getLocationY() != positionY + 1:
+            return True
+            
+        return False
+
+    def _addCardOnBoard(self, firstSegment, secondSegment):
+        self._board[firstSegment.getLocationX()][firstSegment.getLocationY()] = firstSegment
+        self._board[secondSegment.getLocationX()][secondSegment.getLocationY()] = secondSegment
+
     def _canRecycleCard(self, card):
         segment1, segment2 = card.getSegments()
         return (len(self._cards) == self._MAX_CARDS_ALLOWED
-                and self.board[segment1.getLocationX()][segment1.getLocationY() - 1] is None 
-                and self.board[segment2.getLocationX()][segment2.getLocationY() - 1] is None
+                and self._board[segment1.getLocationX()][segment1.getLocationY() - 1] is None 
+                and self._board[segment2.getLocationX()][segment2.getLocationY() - 1] is None
                 and card != self._lastCardPlayed)
-        
-    def hasWinner(self):
-        # check if the last card that was played caused a player to win
-        firstSegment, secondSegment = self._lastCardPlayed.getSegments()
-        return self.horizontalWin(firstSegment, secondSegment) or self.verticalWin(firstSegment, secondSegment) or self.diagonalWin()
 
-    def horizontalWin(self, firstSegment, secondSegment):
-        return (self.horizontalCheckDots(firstSegment, 'WDOT') 
-            or self.horizontalCheckDots(secondSegment, 'BDOT')
-            or self.horizontalCheckColors(firstSegment, 'WHITE') 
-            or self.horizontalCheckColors(secondSegment, 'RED'))
+    def _horizontalWin(self, firstSegment, secondSegment):
+        return (self._horizontalCheckDots(firstSegment, 'WDOT') 
+            or self._horizontalCheckDots(secondSegment, 'BDOT')
+            or self._horizontalCheckColors(firstSegment, 'WHITE') 
+            or self._horizontalCheckColors(secondSegment, 'RED'))
 
-    def horizontalCheckDots(self, segment, symbol):
+    def _horizontalCheckDots(self, segment, symbol):
         countWhiteDots=0
         countBlackDots=0
         for eachColumn in range(1, 9):
-            if self.board[eachColumn][segment.getLocationY()] != None:
-                if str(self.board[eachColumn][segment.getLocationY()].getSymbol()) == symbol:
+            if self._board[eachColumn][segment.getLocationY()] != None:
+                if str(self._board[eachColumn][segment.getLocationY()].getSymbol()) == symbol:
                     countWhiteDots += 1
                     countBlackDots = 0
                 else:
@@ -173,12 +172,12 @@ class Board:
 
         return False
 
-    def horizontalCheckColors(self, segment, color):
+    def _horizontalCheckColors(self, segment, color):
         countWhiteCards = 0
         countRedCards = 0
         for eachColumn in range(1, 9):
-            if self.board[eachColumn][segment.getLocationY()] != None:
-                if str(self.board[eachColumn][segment.getLocationY()].getColor()) == color:
+            if self._board[eachColumn][segment.getLocationY()] != None:
+                if str(self._board[eachColumn][segment.getLocationY()].getColor()) == color:
                     countWhiteCards += 1
                     countRedCards = 0
                 else:
@@ -192,18 +191,18 @@ class Board:
 
         return False
         
-    def verticalWin(self, firstSegment, secondSegment):
-        return (self.verticalCheckDots(firstSegment, 'WDOT') 
-            or self.verticalCheckDots(secondSegment, 'BDOT')
-            or self.verticalCheckColors(firstSegment, 'WHITE')
-            or self.verticalCheckColors(secondSegment, 'RED'))
+    def _verticalWin(self, firstSegment, secondSegment):
+        return (self._verticalCheckDots(firstSegment, 'WDOT') 
+            or self._verticalCheckDots(secondSegment, 'BDOT')
+            or self._verticalCheckColors(firstSegment, 'WHITE')
+            or self._verticalCheckColors(secondSegment, 'RED'))
 
-    def verticalCheckDots(self, segment, symbol):
+    def _verticalCheckDots(self, segment, symbol):
         countWhiteDots = 0
         countBlackDots = 0
         for eachRow in range(12):
-            if self.board[segment.getLocationX()][eachRow] != None:
-                if str(self.board[segment.getLocationX()][eachRow].getSymbol()) == symbol:
+            if self._board[segment.getLocationX()][eachRow] != None:
+                if str(self._board[segment.getLocationX()][eachRow].getSymbol()) == symbol:
                     countWhiteDots += 1
                     countBlackDots = 0
                 else:
@@ -217,12 +216,12 @@ class Board:
 
         return False       
         
-    def verticalCheckColors(self, segment, symbol):
+    def _verticalCheckColors(self, segment, symbol):
         countWhiteCards = 0
         countRedCards = 0
         for eachRow in range(12):
-            if self.board[segment.getLocationX()][eachRow] != None:
-                if str(self.board[segment.getLocationX()][eachRow].getColor()) == symbol:
+            if self._board[segment.getLocationX()][eachRow] != None:
+                if str(self._board[segment.getLocationX()][eachRow].getColor()) == symbol:
                     countWhiteCards += 1
                     countRedCards = 0
                 else:
@@ -236,56 +235,56 @@ class Board:
 
         return False
     
-    def diagonalWin(self):
-        if self.firstDiagonalDots() or self.secondDiagonalDots():
+    def _diagonalWin(self):
+        if self._firstDiagonalDots() or self._secondDiagonalDots():
             self._winner = Player.Marker.DOTS
             return True
-        elif self.firstDiagonalColors() or self.secondDiagonalColors():
+        elif self._firstDiagonalColors() or self._secondDiagonalColors():
             self._winner = Player.Marker.COLOR
             return True
 
         return False  
 
     #\Dots
-    def firstDiagonalDots(self):
+    def _firstDiagonalDots(self):
         for y in range(9):
             for x in range(1, 6):
-                if self.board[x][y] != None and self.board[x+1][y+1] != None and self.board[x+2][y+2] != None and self.board[x+3][y+3] != None:
-                    if self.board[x][y].getSymbol() == self.board[x+1][y+1].getSymbol():
-                        if self.board[x+1][y+1].getSymbol() == self.board[x+2][y+2].getSymbol():
-                            if self.board[x+2][y+2].getSymbol() == self.board[x+3][y+3].getSymbol():
+                if self._board[x][y] != None and self._board[x+1][y+1] != None and self._board[x+2][y+2] != None and self._board[x+3][y+3] != None:
+                    if self._board[x][y].getSymbol() == self._board[x+1][y+1].getSymbol():
+                        if self._board[x+1][y+1].getSymbol() == self._board[x+2][y+2].getSymbol():
+                            if self._board[x+2][y+2].getSymbol() == self._board[x+3][y+3].getSymbol():
                                 return True
         return False 
 
     #/Dots
-    def secondDiagonalDots(self):
+    def _secondDiagonalDots(self):
         for y in range(3, 12):
             for x in range(1, 6):
-                if self.board[x][y] != None and self.board[x+1][y-1] != None and self.board[x+2][y-2] != None and self.board[x+3][y-3] != None:
-                    if self.board[x][y].getSymbol() == self.board[x+1][y-1].getSymbol():
-                        if self.board[x+1][y-1].getSymbol() == self.board[x+2][y-2].getSymbol():
-                            if self.board[x+2][y-2].getSymbol() == self.board[x+3][y-3].getSymbol():
+                if self._board[x][y] != None and self._board[x+1][y-1] != None and self._board[x+2][y-2] != None and self._board[x+3][y-3] != None:
+                    if self._board[x][y].getSymbol() == self._board[x+1][y-1].getSymbol():
+                        if self._board[x+1][y-1].getSymbol() == self._board[x+2][y-2].getSymbol():
+                            if self._board[x+2][y-2].getSymbol() == self._board[x+3][y-3].getSymbol():
                                 return True
         return False
 
     #\Colors
-    def firstDiagonalColors(self):
+    def _firstDiagonalColors(self):
         for y in range(9):
             for x in range(1, 6):
-                if self.board[x][y] != None and self.board[x+1][y+1] != None and self.board[x+2][y+2] != None and self.board[x+3][y+3] != None:
-                    if self.board[x][y].getColor() == self.board[x+1][y+1].getColor():
-                        if self.board[x+1][y+1].getColor() == self.board[x+2][y+2].getColor():
-                            if self.board[x+2][y+2].getColor() == self.board[x+3][y+3].getColor():
+                if self._board[x][y] != None and self._board[x+1][y+1] != None and self._board[x+2][y+2] != None and self._board[x+3][y+3] != None:
+                    if self._board[x][y].getColor() == self._board[x+1][y+1].getColor():
+                        if self._board[x+1][y+1].getColor() == self._board[x+2][y+2].getColor():
+                            if self._board[x+2][y+2].getColor() == self._board[x+3][y+3].getColor():
                                 return True
         return False  
 
     #/Colors
-    def secondDiagonalColors(self):
+    def _secondDiagonalColors(self):
         for y in range(3, 12):
             for x in range(1, 6):
-                if self.board[x][y] != None and self.board[x+1][y-1] != None and self.board[x+2][y-2] != None and self.board[x+3][y-3] != None:
-                    if self.board[x][y].getColor() == self.board[x+1][y-1].getColor():
-                        if self.board[x+1][y-1].getColor() == self.board[x+2][y-2].getColor():
-                            if self.board[x+2][y-2].getColor() == self.board[x+3][y-3].getColor():
+                if self._board[x][y] != None and self._board[x+1][y-1] != None and self._board[x+2][y-2] != None and self._board[x+3][y-3] != None:
+                    if self._board[x][y].getColor() == self._board[x+1][y-1].getColor():
+                        if self._board[x+1][y-1].getColor() == self._board[x+2][y-2].getColor():
+                            if self._board[x+2][y-2].getColor() == self._board[x+3][y-3].getColor():
                                 return True
         return False
