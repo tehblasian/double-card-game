@@ -9,7 +9,6 @@ class Board:
         self._cards = []
         self._lastCardPlayed = None
         self._MAX_CARDS_ALLOWED = maxCardsAllowed
-        self._winner = None
 
         for row in range(0,12):
             self.board[0][row] = 12-row
@@ -43,6 +42,9 @@ class Board:
             
     def getCards(self):
         return self._cards
+
+    def getLastCardPlayed(self):
+        return self._lastCardPlayed
     
     def addCard(self, card, recycled=False):
         firstSegment = card.getSegments()[0]
@@ -141,27 +143,16 @@ class Board:
                 and self.board[segment2.getLocationX()][segment2.getLocationY() - 1] is None
                 and card != self._lastCardPlayed)
         
-    #this is the method you call not the sub-one except if you need them
-    #Can use this method twice for each Player for the same card put in the board
-
-    # TODO: refactor winner check to use last card played overall
     def hasWinner(self):
         # check if the last card that was played caused a player to win
         firstSegment, secondSegment = self._lastCardPlayed.getSegments()
         return self.horizontalWin(firstSegment, secondSegment) or self.verticalWin(firstSegment, secondSegment) or self.diagonalWin()
 
     def horizontalWin(self, firstSegment, secondSegment):
-        if self.horizontalCheckDots(firstSegment, 'WDOT') or self.horizontalCheckDots(secondSegment, 'BDOT'):
-            self._winner = Player.Marker.COLOR
-            return True
-        elif self.horizontalCheckColors(firstSegment, 'WHITE') or self.horizontalCheckColors(secondSegment, 'RED'):
-            self._winner = Player.Marker.COLOR
-            return True
-
-        return False
-
-    def getWinner(self):
-        return self._winner
+        return (self.horizontalCheckDots(firstSegment, 'WDOT') 
+            or self.horizontalCheckDots(secondSegment, 'BDOT')
+            or self.horizontalCheckColors(firstSegment, 'WHITE') 
+            or self.horizontalCheckColors(secondSegment, 'RED'))
 
     def horizontalCheckDots(self, segment, symbol):
         countWhiteDots=0
@@ -202,14 +193,10 @@ class Board:
         return False
         
     def verticalWin(self, firstSegment, secondSegment):
-        if self.verticalCheckDots(firstSegment, 'WDOT') or self.verticalCheckDots(secondSegment, 'BDOT'):
-            self._winner = Player.Marker.DOTS
-            return True
-        elif self.verticalCheckColors(firstSegment, 'WHITE') or self.verticalCheckColors(secondSegment, 'RED'):
-            self._winner = Player.Marker.COLOR
-            return True
-
-        return False
+        return (self.verticalCheckDots(firstSegment, 'WDOT') 
+            or self.verticalCheckDots(secondSegment, 'BDOT')
+            or self.verticalCheckColors(firstSegment, 'WHITE')
+            or self.verticalCheckColors(secondSegment, 'RED'))
 
     def verticalCheckDots(self, segment, symbol):
         countWhiteDots = 0

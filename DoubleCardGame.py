@@ -30,8 +30,9 @@ class DoubleCardGame:
             if self._board.hasWinner():
                 self._hasWinner = True 
                 player1, player2 = self._players
-                winning_marker = self._board.getWinner()
-                if player1.getMarker() == winning_marker:
+                winning_card = self._board.getLastCardPlayed()
+                
+                if winning_card in player1.getCards():
                     print('{} has won!'.format(player1.getName()))
                 else:
                     print('{} has won!'.format(player2.getName()))

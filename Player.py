@@ -19,6 +19,9 @@ class Player:
     def getMarker(self):
         return self._marker
 
+    def getCards(self):
+        return self._cards
+
     def takeTurn(self):
         tries = 0
 
