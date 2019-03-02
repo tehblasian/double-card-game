@@ -40,7 +40,8 @@ class Board:
                     else:
                         printRow += "  "+str(self._board[row][column].getColor()[0:1])+"_"+str(self._board[row][column].getSymbol()[0:2])+"  |"
             print(printRow)
-            
+        self._profHeuristic()    
+        #print("The heuristice for Dots is : ",self.heuristic("DOTS"))  
     def getCards(self):
         return self._cards
 
@@ -303,6 +304,271 @@ class Board:
                             if self._board[x+2][y-2].getColor() == self._board[x+3][y-3].getColor():
                                 return True
         return False
+
+    def heuristic(self,typeOfAI):
+        # Algorithm
+        # Look for 4 consecutive segment
+        # if segment is NONE +5points
+        # if 1 segment of correct type +10points
+        # 2 consecutives +50points
+        # 3 consecutives +100points
+        # 4 consecutives +1 000 000points
+        # SPECIAL CASE -10points if the the opposite type break the sequence ex: the opposite of WhiteDots is BlackDots
+
+        if typeOfAI == Player.Marker.DOTS:
+            return (self._heuristicDots(True) - self._heuristicColors(False))
+        else :
+            return (self._heuristicColors(True) - self._heuristicDots(False))
+
+    def _heuristicDots(self,isAI) :
+        total = 0
+        total = total + self._horizontalInARowDots('WDOT',isAI)
+        total = total + self._horizontalInARowDots('BDOT',isAI)
+
+        total = total + self._verticalInARowDots('WDOT',isAI)
+        total = total + self._verticalInARowDots('BDOT',isAI)
+
+        #\
+        total = total + self._firstDiagonalInARowDots('WDOT',isAI)
+        total = total + self._firstDiagonalInARowDots('BDOT',isAI)
+
+        #/
+        total = total + self._secondDiagonalInARowDots('WDOT',isAI)
+        total = total + self._secondDiagonalInARowDots('BDOT',isAI)
+        print("Dots total:",total)
+        return total
+    def _heuristicColors(self,isAI):
+        total = 0
+        total = total + self._horizontalInARowColors('WHITE',isAI)
+        total = total + self._horizontalInARowColors('RED',isAI)
+
+        total = total + self._verticalInARowColors('WHITE',isAI)
+        total = total + self._verticalInARowColors('RED',isAI)
+
+        #\
+        total = total + self._firstDiagonalInARowColors('WHITE',isAI)
+        total = total + self._firstDiagonalInARowColors('RED',isAI)
+
+        #/
+        total = total + self._secondDiagonalInARowColors('WHITE',isAI)
+        total = total + self._secondDiagonalInARowColors('RED',isAI)
+        print("Colors total:",total)
+        return total
+    
+    def _horizontalInARowDots(self,dotType,isAI):
+        subTotal=0
+        for y in range(0,12):
+            for x in range(1,6):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowDot(self._board[x][y],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+1][y],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+2][y],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+3][y],dotType,counter,subTotal,isAI)
+        return subTotal
+    def _verticalInARowDots(self,dotType,isAI):
+        subTotal=0
+        for y in range(0,9):
+            for x in range(1,9):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowDot(self._board[x][y],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x][y+1],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x][y+2],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x][y+3],dotType,counter,subTotal,isAI)
+        return subTotal
+
+    def _firstDiagonalInARowDots(self,dotType,isAI):
+        subTotal=0
+        for y in range(9):
+            for x in range(1, 6):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowDot(self._board[x][y],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+1][y+1],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+2][y+2],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+3][y+3],dotType,counter,subTotal,isAI)
+        return subTotal
+    def _secondDiagonalInARowDots(self,dotType,isAI):
+        subTotal=0
+        for y in range(3,12):
+            for x in range(1, 6):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowDot(self._board[x][y],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+1][y-1],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+2][y-2],dotType,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowDot(self._board[x+3][y-3],dotType,counter,subTotal,isAI)
+        return subTotal
+    
+    def _checkFourInARowDot(self,element,dotType,counter,subTotal,isAI):
+        if element is None :
+            counter = 0
+            subTotal = subTotal + 5 
+            return counter,subTotal
+        if element.getSymbol() == dotType :
+            counter,subTotal = self._howManyInARow(counter)
+            return counter,subTotal
+        else :
+            counter = 0
+            if isAI :
+                subTotal = subTotal - 10
+            else :
+                subTotal = subTotal -5
+            return counter,subTotal
+
+
+
+    def _horizontalInARowColors(self,colors,isAI):
+        subTotal=0
+        for y in range(0,12):
+            for x in range(1,6):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowColors(self._board[x][y],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+1][y],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+2][y],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+3][y],colors,counter,subTotal,isAI)
+        return subTotal
+    def _verticalInARowColors(self,colors,isAI):
+        subTotal=0
+        for y in range(0,9):
+            for x in range(1,9):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowColors(self._board[x][y],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x][y+1],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x][y+2],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x][y+3],colors,counter,subTotal,isAI)
+        return subTotal
+
+    def _firstDiagonalInARowColors(self,colors,isAI):
+        subTotal=0
+        for y in range(9):
+            for x in range(1, 6):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowColors(self._board[x][y],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+1][y+1],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+2][y+2],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+3][y+3],colors,counter,subTotal,isAI)
+        return subTotal
+    def _secondDiagonalInARowColors(self,colors,isAI):
+        subTotal=0
+        for y in range(3,12):
+            for x in range(1, 6):
+                if subTotal >= 1000000:
+                    return subTotal
+                counter=0
+                counter,subTotal = self._checkFourInARowColors(self._board[x][y],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+1][y-1],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+2][y-2],colors,counter,subTotal,isAI)
+                counter,subTotal = self._checkFourInARowColors(self._board[x+3][y-3],colors,counter,subTotal,isAI)
+        return subTotal
+    
+    def _checkFourInARowColors(self,element,colors,counter,subTotal,isAI):
+        if element is None :
+            counter = 0
+            subTotal = subTotal + 5 
+            return counter,subTotal
+        if element.getColor() == colors :
+            counter,subTotal = self._howManyInARow(counter)
+            return counter,subTotal
+        else :
+            counter = 0
+            if isAI :
+                subTotal = subTotal - 10
+            else :
+                subTotal = subTotal - 5
+            return counter,subTotal
+
+    def _howManyInARow(self,counter):
+        if counter == 0:
+            counter = counter + 1
+            return counter,10
+        elif counter == 1:
+            counter = counter + 1
+            return counter,40
+        elif counter == 2:
+            counter = counter + 1
+            return counter,50
+        elif counter == 3:
+            counter = counter + 1
+            return counter,1000000
+
+    def _profHeuristic(self):
+        self._FakeBoard = [[None for column in range(13)] for row in range(9)]
+        for row in range(0,12):
+            self._FakeBoard[0][row] = 12-row
+
+        self._FakeBoard[1][12] = " A  "
+        self._FakeBoard[2][12] = " B  "
+        self._FakeBoard[3][12] = " C  "
+        self._FakeBoard[4][12] = " D  "
+        self._FakeBoard[5][12] = " E  "
+        self._FakeBoard[6][12] = " F  "
+        self._FakeBoard[7][12] = " G  "
+        self._FakeBoard[8][12] = " H  "
+        
+        self._FakeBoard[0][12] = 0
+
+        for y in range (0,12):
+            for x in range(1,9):
+                self._FakeBoard[x][y] = 110 -(10*y) +x
+
+        countWhiteO =0
+        a = [0]
+        countWhiteX =0
+        b = [0]
+        countRedX = 0
+        c = [0]
+        countRedO =0
+        d = [0]
+
+        for y in range (0,12):
+            for x in range(1,9):
+                if self._board[x][y] is not None:
+                    if self._board[x][y].getColor() == "WHITE" and self._board[x][y].getSymbol() == "WDOT":
+                        countWhiteO = countWhiteO + self._FakeBoard[x][y]
+                        a.append(self._FakeBoard[x][y])
+                    if self._board[x][y].getColor() == "WHITE" and self._board[x][y].getSymbol() == "BDOT":
+                        countWhiteX = countWhiteX + 3*self._FakeBoard[x][y]
+                        b.append(self._FakeBoard[x][y])
+                    if self._board[x][y].getColor() == "RED" and self._board[x][y].getSymbol() == "BDOT":
+                        countRedX = countRedX + 2*self._FakeBoard[x][y]
+                        c.append(self._FakeBoard[x][y])
+                    if self._board[x][y].getColor() == "RED" and self._board[x][y].getSymbol() == "WDOT":
+                        countRedO = countRedO + 1.5*self._FakeBoard[x][y]
+                        d.append(self._FakeBoard[x][y])
+        print("PROF HEURISTIC")
+        print(countWhiteO + countWhiteX - countRedX - countRedO)
+        print(a)
+        print(b)
+        print(c)
+        print(d)
+
+
+      #  for column in range(13):
+       #     printRow = ""
+        #    for row in range(9):
+         #       if column == 12 or row == 0:
+          #          if row == 0 and self._FakeBoard[row][column] <10:
+           #             printRow += "  "+str(self._FakeBoard[row][column])+"   |"
+            #        else:
+             #           printRow += "  "+str(self._FakeBoard[row][column])+"  |"
+              #  else:
+               #     if self._FakeBoard[row][column] == None:
+                #        printRow += "  "+str(self._FakeBoard[row][column])+"  |"
+                 #   else:
+                  #      printRow += "   "+str(self._FakeBoard[row][column])+"   |"
+            #print(printRow)
 
     def _findLowestOpenCell(self, col):
         column = self._board[col]
