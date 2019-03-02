@@ -303,3 +303,87 @@ class Board:
                             if self._board[x+2][y-2].getColor() == self._board[x+3][y-3].getColor():
                                 return True
         return False
+
+    def _findLowestOpenCell(self, col):
+        column = self._board[col]
+        for i in range(13):
+            if column[12-i] is None:
+                return i
+
+        return None
+
+    def _validateVerticalPosition(self, currentCol, lowestCellInCol):
+        if self._board[currentCol][12-lowestCellInCol] is None:
+            cellAbove = 12-lowestCellInCol-1
+            if cellAbove < 0:
+                return None
+            
+            if self._board[currentCol][cellAbove] is None:
+                return (currentCol, lowestCellInCol)
+
+    def _getAvailableCellsVerticalCard(self):
+        validPositions = []
+        for i in range(1,9):
+            lowestOpenCellInColumn = self._findLowestOpenCell(i)
+            position = self._validateVerticalPosition(i, lowestOpenCellInColumn)
+            if position is not None:
+                validPositions.append(position) 
+
+        return validPositions
+
+    def _validateHorizontalPosition(self, currentCol, lowestCellInCol):
+        if (self._board[currentCol][12-lowestCellInCol] is None 
+            and self._board[currentCol+1][12-lowestCellInCol] is None
+            and self._board[currentCol+1][12-lowestCellInCol+1] is not None):
+            return (currentCol, lowestCellInCol)
+
+        return None
+    
+    def _getAvailableCellsHorizontalCard(self): 
+        validPositions = []
+        for i in range(1,8):
+            lowestOpenCellInColumn = self._findLowestOpenCell(i)
+            position = self._validateHorizontalPosition(i, lowestOpenCellInColumn)
+            if position is not None:
+                validPositions.append(position)
+
+        return validPositions
+    
+if __name__ == '__main__':
+    b = Board(24)
+    c1 = Card(5, ['A', '1'])
+    c2 = Card(5, ['A', '2'])
+    c3 = Card(5, ['A', '3'])
+    c4 = Card(5, ['A', '4'])
+    c5 = Card(5, ['A', '5'])
+    c6 = Card(5, ['A', '6'])
+    c7 = Card(5, ['A', '7'])
+    c8 = Card(5, ['A', '8'])
+    c9 = Card(5, ['A', '9'])
+    c10 = Card(5, ['A', '10'])
+    c11 = Card(5, ['A', '11'])
+    c12 = Card(4, ['C', '1'])
+    c13 = Card(5, ['D', '1'])
+    c14 = Card(4, ['F', '1'])
+    c15 = Card(4, ['H', '1'])
+
+    b.addCard(c1)
+    b.addCard(c2)
+    b.addCard(c3)
+    b.addCard(c4)
+    b.addCard(c5)
+    b.addCard(c6)
+    b.addCard(c7)
+    b.addCard(c8)
+    b.addCard(c9)
+    b.addCard(c10)
+    b.addCard(c11)
+    b.addCard(c12)
+    b.addCard(c13)
+    b.addCard(c14)
+    b.addCard(c15)
+
+    b.printBoard()
+
+    print('Open horizontal positions: ', b._getAvailableCellsHorizontalCard())
+    print('Open vertical positions: ', b._getAvailableCellsVerticalCard())
