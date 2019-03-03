@@ -11,7 +11,7 @@ class AI(Player):
     def takeTurn(self):
         start_time = time.time()
         cache = {}
-        card_state, vertical_position, current_score = self._board.minimax(self._board, 3, -math.inf, math.inf, True, self._marker, cache)
+        card_state, vertical_position, current_score = self._board.minimax(self._board, 4, -math.inf, math.inf, True, self._marker, cache)
         print("--- %s seconds ---" % (time.time() - start_time))
         print(self._name, 'played:', card_state, vertical_position, current_score)
 

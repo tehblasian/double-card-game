@@ -44,9 +44,9 @@ class Board:
                         printRow += "  "+str(self._board[row][column].getColor()[0:1])+"_"+str(self._board[row][column].getSymbol()[0:2])+"  |"
             print(printRow)
         #self._profHeuristic()    
-        start = timeit.default_timer()
-        print("The heuristice for Dots is : ",self.heuristic("DOTS"))  
-        print(timeit.default_timer() -start)
+        # start = timeit.default_timer()
+        # print("The heuristice for Dots is : ",self.heuristic("DOTS"))  
+        # print(timeit.default_timer() -start)
     def getCards(self):
         return self._cards
 
@@ -324,33 +324,69 @@ class Board:
         #         value := min(value, minimax(child, depth − 1, TRUE))
         #     return value
 
-        available_vertical_positions = board._getAvailableCellsVerticalCard()
-        available_horizontal_positions = board._getAvailableCellsHorizontalCard()
-        available_positions = [available_vertical_positions, available_horizontal_positions]
+        available_positions = board._getAvailableCellsVerticalCard()
 
-        # if the score for this node has already been calculated, return it
-        # b_hash = hash(board)
-        # if b_hash in cache:
-        #     return cache[b_hash]
+        # here we will check if the score for this state has already been calculated
+        # return the value or update alpha and beta if needed
+
+        # get hash of board and check if in cache
+        b_hash = hash(board)
+        b_hash_entry = cache.get(b_hash)
+
+        # only consider the stored value if we are at a greater or equal depth
+        if b_hash_entry is not None and b_hash_entry[4] >= depth:
+            entry_state = b_hash_entry[0]
+            entry_position = b_hash_entry[1]
+            entry_score = b_hash_entry[2]
+            entry_type = b_hash_entry[3]
+
+            # the stored score is from a leaf node
+            if entry_type == 'EXACT':
+                return entry_state, entry_position, entry_score
+
+            # max player seeks to make alpha bigger
+            if entry_type == 'LOWERBOUND' and entry_score > alpha:
+                alpha = entry_score
+            
+            # min player seeks to make beta smaller
+            elif entry_type == 'UPPERBOUND' and entry_score < beta:
+                beta = entry_score
+            
+            # alpha-beta cutoff
+            if alpha >= beta:
+                return entry_state, entry_position, entry_score
 
         # return score if depth is reached or node is terminal
         is_terminal_node = board.hasWinner()
         if depth == 0 or is_terminal_node:
-            return None, None, board.heuristic(ai_piece)
+            score = board.heuristic(ai_piece)
+
+            
+            if score < alpha:
+                cache[b_hash] = (None, None, score, 'LOWERBOUND', depth)
+            elif score >= beta:
+                cache[b_hash] = (None, None, score, 'UPPERBOUND', depth)
+            else:
+                cache[b_hash] = (None, None, score, 'EXACT', depth)
+
+            return None, None, score
 
         if maximizingPlayer:
             best_score = -math.inf
-            best_position = random.choice(random.choices(available_positions, weights=map(len, available_positions))[0])
+            best_position = random.choice(available_positions)
             best_card_state = None
 
             # look at vertical positions 
-            for position in available_vertical_positions:
+            for position in available_positions:
                 col, lowest_open_cell = position
                 b = deepcopy(board)
-                for state in [2, 4, 6, 8]:
+                for state in range(1, 9):
                     # simulate a drop on the fake board
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
-                    b.addCard(c)
+                    legal_move = b.addCard(c)
+                    if not legal_move:
+                        continue
+
                     new_score = self.minimax(b, depth-1, alpha, beta, False, ai_piece, cache)[2]
 
                     # if the new score is better than the previous max, update
@@ -358,49 +394,33 @@ class Board:
                         best_score = new_score
                         best_position = position
                         best_card_state = state
-       
-                    # store this node's score in the cache
-                    b_hash = hash(b)
-                    cache[b_hash] = (best_card_state, best_position, best_score)
 
                     # alpha beta pruning
                     alpha = max(alpha, best_score)
                     if alpha >= beta:
                         break
 
-            for position in available_horizontal_positions:
-                col, lowest_open_cell = position
-                b = deepcopy(board)
-                for state in [1, 3, 5, 7]:
-                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
-                    b.addCard(c)
-                    new_score = self.minimax(b, depth-1, alpha, beta, False, ai_piece, cache)[2]
-
-                    if new_score > best_score:
-                        best_score = new_score
-                        best_position = position
-                        best_card_state = state
-
-                    # store this node's score in the cache
-                    b_hash = hash(b)
-                    cache[b_hash] = (best_card_state, best_position, best_score)
-
-                    alpha = max(alpha, best_score)
-                    if alpha >= beta:
-                        break
-            
+            if best_score <= alpha:
+                cache[b_hash] = (state, position, new_score, 'LOWERBOUND', depth)
+            if best_score >= beta:
+                cache[b_hash] = (state, position, new_score, 'UPPERBOUND', depth)
+            else:
+                cache[b_hash] = (state, position, new_score, 'EXACT', depth)  
 
             return best_card_state, best_position, best_score
         else:
             best_score = math.inf
-            best_position = random.choice(random.choices(available_positions, weights=map(len, available_positions))[0])
+            best_position = random.choice(available_positions)
             best_card_state = None
-            for position in available_vertical_positions:
+            for position in available_positions:
                 col, lowest_open_cell = position
                 b = deepcopy(board)
-                for state in [2, 4, 6, 8]:
+                for state in range(1, 9):
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
-                    b.addCard(c)
+                    legal_move = b.addCard(c)
+                    if not legal_move:
+                        continue
+
                     new_score = self.minimax(b, depth-1, alpha, beta, True, ai_piece, cache)[2]
 
                     if new_score < best_score:
@@ -408,34 +428,17 @@ class Board:
                         best_position = position
                         best_card_state = state
 
-                    # store this node's score in the cache
-                    b_hash = hash(b)
-                    cache[b_hash] = (best_card_state, best_position, best_score)
-
+                    # alpha-beta pruning
                     beta = min(beta, best_score)
                     if alpha >= beta:
-                        break
+                        break    
 
-            for position in available_horizontal_positions:
-                col, lowest_open_cell = position
-                b = deepcopy(board)
-                for state in [1, 3, 5, 7]:
-                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
-                    b.addCard(c)
-                    new_score = self.minimax(b, depth-1, alpha, beta, False, ai_piece, cache)[2]
-
-                    if new_score > best_score:
-                        best_score = new_score
-                        best_position = position
-                        best_card_state = state
-
-                    # store this node's score in the cache
-                    b_hash = hash(b)
-                    cache[b_hash] = (best_card_state, best_position, best_score)
-
-                    alpha = max(alpha, best_score)
-                    if alpha >= beta:
-                        break            
+            if best_score <= alpha:
+                cache[b_hash] = (state, position, new_score, 'LOWERBOUND', depth)
+            if best_score >= beta:
+                cache[b_hash] = (state, position, new_score, 'UPPERBOUND', depth)
+            else:
+                cache[b_hash] = (state, position, new_score, 'EXACT', depth)   
 
             return best_card_state, best_position, best_score
 
@@ -817,7 +820,7 @@ class Board:
         h = 0
         for col in range(1, 9):
             for row in range(1, 13):
-                h += hash(self._board[col][row])
+                h ^= hash(self._board[col][row])
 
         return h
 
