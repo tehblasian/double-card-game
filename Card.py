@@ -119,6 +119,9 @@ class Card:
                 and self._segments[0] == otherCard._segments[0]
                 and self._segments[1] == otherCard._segments[1])
 
+    def __hash__(self):
+        return hash((self._segments[0], self._segments[1]))
+
     # def _getAdjacentLocation(self, state, col, row):
 
     #     right = {
@@ -189,3 +192,5 @@ class Card:
                     and self._locationX == otherSegment._locationX
                     and self._locationY == otherSegment._locationY)
         
+        def __hash__(self):
+            return hash((self._color, self._symbol, self._locationX, self._locationY))

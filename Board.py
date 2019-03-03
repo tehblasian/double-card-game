@@ -1,3 +1,6 @@
+import math
+import random
+from copy import deepcopy
 from Card import Card
 from Player import Player
 
@@ -305,6 +308,149 @@ class Board:
                                 return True
         return False
 
+    def minimax(self, board, depth, alpha, beta, maximizingPlayer, ai_piece, cache):
+        # if depth = 0 or node is a terminal node then
+        #     return the heuristic value of node
+        # if maximizingPlayer then
+        #     value := −∞
+        #     for each child of node do
+        #         value := max(value, minimax(child, depth − 1, FALSE))
+        #     return value
+        # else (* minimizing player *)
+        #     value := +∞
+        #     for each child of node do
+        #         value := min(value, minimax(child, depth − 1, TRUE))
+        #     return value
+
+        available_vertical_positions = board._getAvailableCellsVerticalCard()
+        available_horizontal_positions = board._getAvailableCellsHorizontalCard()
+        available_positions = [available_vertical_positions, available_horizontal_positions]
+
+        # if the score for this node has already been calculated, return it
+        # b_hash = hash(board)
+        # if b_hash in cache:
+        #     return cache[b_hash]
+
+        # return score if depth is reached or node is terminal
+        is_terminal_node = board.hasWinner()
+        if depth == 0 or is_terminal_node:
+            return None, None, board.heuristic(ai_piece)
+
+        if maximizingPlayer:
+            best_score = -math.inf
+            best_position = random.choice(random.choices(available_positions, weights=map(len, available_positions))[0])
+            best_card_state = None
+
+            # look at vertical positions 
+            for position in available_vertical_positions:
+                col, lowest_open_cell = position
+                b = deepcopy(board)
+                for state in [2, 4, 6, 8]:
+                    # simulate a drop on the fake board
+                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+                    b.addCard(c)
+                    new_score = self.minimax(b, depth-1, alpha, beta, False, ai_piece, cache)[2]
+
+                    # if the new score is better than the previous max, update
+                    if new_score > best_score:
+                        best_score = new_score
+                        best_position = position
+                        best_card_state = state
+       
+                    # store this node's score in the cache
+                    b_hash = hash(b)
+                    cache[b_hash] = (best_card_state, best_position, best_score)
+
+                    # alpha beta pruning
+                    alpha = max(alpha, best_score)
+                    if alpha >= beta:
+                        break
+
+            for position in available_horizontal_positions:
+                col, lowest_open_cell = position
+                b = deepcopy(board)
+                for state in [1, 3, 5, 7]:
+                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+                    b.addCard(c)
+                    new_score = self.minimax(b, depth-1, alpha, beta, False, ai_piece, cache)[2]
+
+                    if new_score > best_score:
+                        best_score = new_score
+                        best_position = position
+                        best_card_state = state
+
+                    # store this node's score in the cache
+                    b_hash = hash(b)
+                    cache[b_hash] = (best_card_state, best_position, best_score)
+
+                    alpha = max(alpha, best_score)
+                    if alpha >= beta:
+                        break
+            
+
+            return best_card_state, best_position, best_score
+        else:
+            best_score = math.inf
+            best_position = random.choice(random.choices(available_positions, weights=map(len, available_positions))[0])
+            best_card_state = None
+            for position in available_vertical_positions:
+                col, lowest_open_cell = position
+                b = deepcopy(board)
+                for state in [2, 4, 6, 8]:
+                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+                    b.addCard(c)
+                    new_score = self.minimax(b, depth-1, alpha, beta, True, ai_piece, cache)[2]
+
+                    if new_score < best_score:
+                        best_score = new_score
+                        best_position = position
+                        best_card_state = state
+
+                    # store this node's score in the cache
+                    b_hash = hash(b)
+                    cache[b_hash] = (best_card_state, best_position, best_score)
+
+                    beta = min(beta, best_score)
+                    if alpha >= beta:
+                        break
+
+            for position in available_horizontal_positions:
+                col, lowest_open_cell = position
+                b = deepcopy(board)
+                for state in [1, 3, 5, 7]:
+                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+                    b.addCard(c)
+                    new_score = self.minimax(b, depth-1, alpha, beta, False, ai_piece, cache)[2]
+
+                    if new_score > best_score:
+                        best_score = new_score
+                        best_position = position
+                        best_card_state = state
+
+                    # store this node's score in the cache
+                    b_hash = hash(b)
+                    cache[b_hash] = (best_card_state, best_position, best_score)
+
+                    alpha = max(alpha, best_score)
+                    if alpha >= beta:
+                        break            
+
+            return best_card_state, best_position, best_score
+
+    def _getColumnLetterFromIndex(self, columnLetter):
+        indices = {
+            1: 'A',
+            2: 'B',
+            3: 'C',
+            4: 'D',
+            5: 'E',
+            6: 'F',
+            7: 'G',
+            8: 'H',
+        }
+
+        return indices[columnLetter]
+    
     def heuristic(self,typeOfAI):
         # Algorithm
         # Look for 4 consecutive segment
@@ -335,8 +481,9 @@ class Board:
         #/
         total = total + self._secondDiagonalInARowDots('WDOT',isAI)
         total = total + self._secondDiagonalInARowDots('BDOT',isAI)
-        print("Dots total:",total)
+        # print("Dots total:",total)
         return total
+
     def _heuristicColors(self,isAI):
         total = 0
         total = total + self._horizontalInARowColors('WHITE',isAI)
@@ -352,7 +499,7 @@ class Board:
         #/
         total = total + self._secondDiagonalInARowColors('WHITE',isAI)
         total = total + self._secondDiagonalInARowColors('RED',isAI)
-        print("Colors total:",total)
+        # print("Colors total:",total)
         return total
     
     def _horizontalInARowDots(self,dotType,isAI):
@@ -547,12 +694,14 @@ class Board:
                     if self._board[x][y].getColor() == "RED" and self._board[x][y].getSymbol() == "WDOT":
                         countRedO = countRedO + 1.5*self._FakeBoard[x][y]
                         d.append(self._FakeBoard[x][y])
-        print("PROF HEURISTIC")
-        print(countWhiteO + countWhiteX - countRedX - countRedO)
-        print(a)
-        print(b)
-        print(c)
-        print(d)
+        # print("PROF HEURISTIC")
+        # print(countWhiteO + countWhiteX - countRedX - countRedO)
+        # print(a)
+        # print(b)
+        # print(c)
+        # print(d)
+
+        return countWhiteO + countWhiteX - countRedX - countRedO
 
 
       #  for column in range(13):
@@ -614,6 +763,15 @@ class Board:
                 validPositions.append(position)
 
         return validPositions
+
+    def __hash__(self):
+        h = 0
+        for col in range(1, 9):
+            for row in range(1, 13):
+                h += hash(self._board[col][row])
+
+        return h
+
     
 if __name__ == '__main__':
     b = Board(24)
