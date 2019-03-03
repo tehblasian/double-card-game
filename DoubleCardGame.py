@@ -1,5 +1,6 @@
 from Board import Board
 from Player import Player
+from AI_Player import AI
 
 class DoubleCardGame:
     _MAX_ROUNDS = 60
@@ -50,9 +51,6 @@ if __name__ == '__main__':
     print('Let\'s play DoubleCardGame!\n')
         
     mode = input('Select the game mode:\n\t1 - Human vs. Human\n\t2 - Human vs. AI\n')
-    if int(mode) == 2:
-        print('AI NOT IMPLEMEMTED')
-        exit(0)
         
     player1_name = input('\nEnter player 1\'s name: ')
     player1_marker = input('\nSelect player 1\'s marker:\n1 - Dots \n2 - Color\n')
@@ -65,11 +63,17 @@ if __name__ == '__main__':
         player1_marker = Player.Marker.COLOR
         player2_marker = Player.Marker.DOTS
     
-    player2_name = input('\nEnter player 2\'s name: \n')
+    if int(mode) == 1:
+        player2_name = input('\nEnter player 2\'s name: \n')
 
     board = Board(DoubleCardGame._MAX_CARDS_PER_PLAYER * 2)
     player1 = Player(player1_name, player1_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
-    player2 = Player(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
+    
+    player2 = None
+    if int(mode) == 2:
+        player2 = AI('NORA FAKOTAKIS', player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
+    else:
+        player2 = Player(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     
     game = DoubleCardGame(board, [player1, player2])
 
