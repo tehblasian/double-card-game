@@ -9,7 +9,8 @@ class AI(Player):
         Player.__init__(self, name, marker, board, maxCardsAllowed)
 
     def takeTurn(self):
-        self.regular_minimax()
+        #self.regular_minimax()
+        self.tourneyAI()
 
     def regular_minimax(self):
         start_time = time.time()
@@ -28,7 +29,7 @@ class AI(Player):
         start_time = time.time()
         cache = {}
 
-        for i in range(1, 5):
+        for i in range(1, 3):
             state, position, score = self._board.minimax(self._board, i, -math.inf, math.inf, True, self._marker, cache)
             i += 1
 

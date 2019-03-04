@@ -328,9 +328,9 @@ class Board:
             # look at vertical positions 
             for position in available_positions:
                 col, lowest_open_cell = position
-                b = deepcopy(board)
                 for state in range(1, 9):
-                    # simulate a drop on the fake board
+                    # created fake board simulate a drop
+                    b = deepcopy(board)
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
                     legal_move = b.addCard(c)
                     if not legal_move:
@@ -351,8 +351,8 @@ class Board:
             best_card_state = None
             for position in available_positions:
                 col, lowest_open_cell = position
-                b = deepcopy(board)
                 for state in range(1, 9):
+                    b = deepcopy(board)
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
                     legal_move = b.addCard(c)
                     if not legal_move:
@@ -435,9 +435,9 @@ class Board:
             # look at vertical positions 
             for position in available_positions:
                 col, lowest_open_cell = position
-                b = deepcopy(board)
                 for state in range(1, 9):
-                    # simulate a drop on the fake board
+                    # created fake board simulate a drop
+                    b = deepcopy(board)
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
                     legal_move = b.addCard(c)
                     if not legal_move:
@@ -470,8 +470,9 @@ class Board:
             best_card_state = None
             for position in available_positions:
                 col, lowest_open_cell = position
-                b = deepcopy(board)
                 for state in range(1, 9):
+                    # created fake board simulate a drop
+                    b = deepcopy(board)
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
                     legal_move = b.addCard(c)
                     if not legal_move:
