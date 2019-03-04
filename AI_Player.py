@@ -16,12 +16,12 @@ class AI(Player):
         start_time = time.time()
         state, position, score = self._board.regular_minimax(self._board, 2, True, self._marker)
 
-        print("--- %s seconds ---" % (time.time() - start_time))
-        print(self._name, 'played:', state, position, score)
-
         col, row = position
         card = Card(state, [str(self._board._getColumnLetterFromIndex(col)), str(row)])
         self._cards.append(card)
+
+        letter = self._board._getColumnLetterFromIndex(col)
+        print('{} took {}s to play {} {} {}. Move score was {}'.format(self._name, (time.time() - start_time), state, letter, row, score))
 
         return self._board.addCard(card)
 
@@ -33,12 +33,12 @@ class AI(Player):
             state, position, score = self._board.minimax(self._board, i, -math.inf, math.inf, True, self._marker, cache)
             i += 1
 
-        print("--- %s seconds ---" % (time.time() - start_time))
-        print(self._name, 'played:', state, position, score)
-
         col, row = position
         card = Card(state, [str(self._board._getColumnLetterFromIndex(col)), str(row)])
         self._cards.append(card)
+
+        letter = self._board._getColumnLetterFromIndex(col)
+        print('{} took {}s to play {} {} {}. Move score was {}'.format(self._name, (time.time() - start_time), state, letter, row, score))
 
         return self._board.addCard(card)
         

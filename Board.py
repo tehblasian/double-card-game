@@ -122,6 +122,9 @@ class Board:
         return None
 
     def hasWinner(self):
+        if self._lastCardPlayed is None:
+            return False
+
         firstSegment, secondSegment = self._lastCardPlayed.getSegments()
         return self._horizontalWin(firstSegment, secondSegment) or self._verticalWin(firstSegment, secondSegment) or self._diagonalWin()
     

@@ -28,6 +28,7 @@ class DoubleCardGame:
         for player in self._players:
             player.takeTurn()
             self._board.printBoard()
+            print()
             if self._board.hasWinner():
                 self._hasWinner = True 
 
@@ -41,16 +42,16 @@ class DoubleCardGame:
                     print('{} won!'.format(player.getName()))
                 elif len(winning_markers) == 1:
                     if player1.getMarker() == winning_markers[0]:
-                        print('{} has won!'.format(player1.getName()))
+                        print('{} won!'.format(player1.getName()))
                     else:
-                        print('{} has won!'.format(player2.getName()))
+                        print('{} won!'.format(player2.getName()))
 
                 break
 
 if __name__ == '__main__':
     print('Let\'s play DoubleCardGame!\n')
         
-    mode = input('Select the game mode:\n\t1 - Human vs. Human\n\t2 - Human vs. AI\n')
+    mode = input('Select the game mode:\n    1 - Human vs. Human\n    2 - Human vs. AI\n')
         
     player1_name = input('\nEnter player 1\'s name: ')
     player1_marker = input('\nSelect player 1\'s marker:\n1 - Dots \n2 - Color\n')
@@ -65,16 +66,27 @@ if __name__ == '__main__':
     
     if int(mode) == 1:
         player2_name = input('\nEnter player 2\'s name: \n')
+    else: 
+        player2_name = '** NORA FAKOTAKIS **'
 
     board = Board(DoubleCardGame._MAX_CARDS_PER_PLAYER * 2)
     player1 = Player(player1_name, player1_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     
     player2 = None
     if int(mode) == 2:
-        player2 = AI('NORA FAKOTAKIS', player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
+        player2 = AI(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     else:
         player2 = Player(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     
-    game = DoubleCardGame(board, [player1, player2])
+    first = input('\nWho goes first?:\n    1 - {}\n    2 - {}\n'.format(player1_name, player2_name))
+
+    if int(first) == 1:
+        players = [player1, player2]
+    else:
+        players = [player2, player1]
+
+
+    print()
+    game = DoubleCardGame(board, players)
 
     game.playGame()
