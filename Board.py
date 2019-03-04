@@ -310,6 +310,63 @@ class Board:
                                 return True
         return False
 
+    def regular_minimax(self, board, depth, maximizing_player, ai_piece):
+        available_positions = board._getAvailableCellsVerticalCard()
+        
+        # return score if depth is reached or node is terminal
+        is_terminal_node = board.hasWinner()
+        if depth == 0 or is_terminal_node:
+            score = board.heuristic(ai_piece)
+
+            return None, None, score
+
+        if maximizing_player:
+            best_score = -math.inf
+            best_position = random.choice(available_positions)
+            best_card_state = None
+
+            # look at vertical positions 
+            for position in available_positions:
+                col, lowest_open_cell = position
+                b = deepcopy(board)
+                for state in range(1, 9):
+                    # simulate a drop on the fake board
+                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+                    legal_move = b.addCard(c)
+                    if not legal_move:
+                        continue
+
+                    new_score = self.regular_minimax(b, depth-1, False, ai_piece)[2]
+
+                    # if the new score is better than the previous max, update
+                    if new_score > best_score:
+                        best_score = new_score
+                        best_position = position
+                        best_card_state = state
+
+            return best_card_state, best_position, best_score
+        else:
+            best_score = math.inf
+            best_position = random.choice(available_positions)
+            best_card_state = None
+            for position in available_positions:
+                col, lowest_open_cell = position
+                b = deepcopy(board)
+                for state in range(1, 9):
+                    c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+                    legal_move = b.addCard(c)
+                    if not legal_move:
+                        continue
+
+                    new_score = self.regular_minimax(b, depth-1, True, ai_piece)[2]
+
+                    if new_score < best_score:
+                        best_score = new_score
+                        best_position = position
+                        best_card_state = state
+
+            return best_card_state, best_position, best_score    
+    
     def minimax(self, board, depth, alpha, beta, maximizingPlayer, ai_piece, cache):
         # if depth = 0 or node is a terminal node then
         #     return the heuristic value of node

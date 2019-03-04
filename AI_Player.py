@@ -9,7 +9,20 @@ class AI(Player):
         Player.__init__(self, name, marker, board, maxCardsAllowed)
 
     def takeTurn(self):
-        self.tourneyAI()
+        self.regular_minimax()
+
+    def regular_minimax(self):
+        start_time = time.time()
+        state, position, score = self._board.regular_minimax(self._board, 2, True, self._marker)
+
+        print("--- %s seconds ---" % (time.time() - start_time))
+        print(self._name, 'played:', state, position, score)
+
+        col, row = position
+        card = Card(state, [str(self._board._getColumnLetterFromIndex(col)), str(row)])
+        self._cards.append(card)
+
+        return self._board.addCard(card)
 
     def tourneyAI(self):
         start_time = time.time()
