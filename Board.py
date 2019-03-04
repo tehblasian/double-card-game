@@ -345,12 +345,12 @@ class Board:
                 return entry_state, entry_position, entry_score
 
             # max player seeks to make alpha bigger
-            if entry_type == 'LOWERBOUND' and entry_score > alpha:
-                alpha = entry_score
+            if entry_type == 'LOWERBOUND':
+                alpha = max(alpha, entry_score)
             
             # min player seeks to make beta smaller
-            elif entry_type == 'UPPERBOUND' and entry_score < beta:
-                beta = entry_score
+            elif entry_type == 'UPPERBOUND':
+                beta = min(beta, entry_score)
             
             # alpha-beta cutoff
             if alpha >= beta:
@@ -360,12 +360,11 @@ class Board:
         is_terminal_node = board.hasWinner()
         if depth == 0 or is_terminal_node:
             score = board.heuristic(ai_piece)
-
-            
-            if score < alpha:
-                cache[b_hash] = (None, None, score, 'LOWERBOUND', depth)
-            elif score >= beta:
+      
+            if score <= alpha:
                 cache[b_hash] = (None, None, score, 'UPPERBOUND', depth)
+            elif score >= beta:
+                cache[b_hash] = (None, None, score, 'LOWERBOUND', depth)
             else:
                 cache[b_hash] = (None, None, score, 'EXACT', depth)
 
@@ -401,9 +400,9 @@ class Board:
                         break
 
             if best_score <= alpha:
-                cache[b_hash] = (state, position, new_score, 'LOWERBOUND', depth)
-            if best_score >= beta:
                 cache[b_hash] = (state, position, new_score, 'UPPERBOUND', depth)
+            if best_score >= beta:
+                cache[b_hash] = (state, position, new_score, 'LOWERBOUND', depth)
             else:
                 cache[b_hash] = (state, position, new_score, 'EXACT', depth)  
 
@@ -434,9 +433,9 @@ class Board:
                         break    
 
             if best_score <= alpha:
-                cache[b_hash] = (state, position, new_score, 'LOWERBOUND', depth)
-            if best_score >= beta:
                 cache[b_hash] = (state, position, new_score, 'UPPERBOUND', depth)
+            if best_score >= beta:
+                cache[b_hash] = (state, position, new_score, 'LOWERBOUND', depth)
             else:
                 cache[b_hash] = (state, position, new_score, 'EXACT', depth)   
 
