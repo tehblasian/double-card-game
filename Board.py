@@ -559,7 +559,7 @@ class Board:
     def _horizontalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
         for y in range(0,12):
-            for x in range(1,6,2):
+            for x in range(1,6):
                 if subTotal >= 1000000:
                     return subTotal
                 counterWhite=0
@@ -578,7 +578,7 @@ class Board:
         return subTotal
     def _verticalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
-        for y in range(0,9,3):
+        for y in range(0,9):
             for x in range(1,9):
                 if subTotal >= 1000000:
                     return subTotal
@@ -599,7 +599,7 @@ class Board:
     def _firstDiagonalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
         for y in range(9):
-            for x in range(1, 6,2):
+            for x in range(1,6):
                 if subTotal >= 1000000:
                     return subTotal
                 counterWhite=0
@@ -618,7 +618,7 @@ class Board:
     def _secondDiagonalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
         for y in range(3,12):
-            for x in range(1, 6,2):
+            for x in range(1,6):
                 if subTotal >= 1000000:
                     return subTotal
                 counterWhite=0
@@ -641,7 +641,7 @@ class Board:
             subTotal = subTotal + 5 
             return counter,subTotal
         if element.getSymbol() == dotType :
-            counter,subTotal = self._howManyInARow(counter)
+            counter,subTotal = self._howManyInARow(counter,subTotal,isAI)
             return counter,subTotal
         counter = 0
         if isAI :
@@ -655,7 +655,7 @@ class Board:
     def _horizontalInARowColors(self,whiteColor,redColor,isAI):
         subTotal=0
         for y in range(0,12):
-            for x in range(1,6,2):
+            for x in range(1,6):
                 if subTotal >= 1000000:
                     return subTotal
                 counterWhite=0
@@ -674,7 +674,7 @@ class Board:
         return subTotal
     def _verticalInARowColors(self,whiteColor,redColor,isAI):
         subTotal=0
-        for y in range(0,9,3):
+        for y in range(0,9):
             for x in range(1,9):
                 if subTotal >= 1000000:
                     return subTotal
@@ -695,7 +695,7 @@ class Board:
     def _firstDiagonalInARowColors(self,whiteColor,redColor,isAI):
         subTotal=0
         for y in range(9):
-            for x in range(1, 6,2):
+            for x in range(1,6):
                 if subTotal >= 1000000:
                     return subTotal
                 counterWhite=0
@@ -714,7 +714,7 @@ class Board:
     def _secondDiagonalInARowColors(self,whiteColor,redColor,isAI):
         subTotal=0
         for y in range(3,12):
-            for x in range(1, 6,2):
+            for x in range(1,6):
                 if subTotal >= 1000000:
                     return subTotal
                 counterWhite=0
@@ -737,7 +737,7 @@ class Board:
             subTotal = subTotal + 5 
             return counter,subTotal
         if element.getColor() == colors :
-            counter,subTotal = self._howManyInARow(counter)
+            counter,subTotal = self._howManyInARow(counter,subTotal,isAI)
             return counter,subTotal
         counter = 0
         if isAI :
@@ -746,18 +746,32 @@ class Board:
             subTotal = subTotal - 5
         return counter,subTotal
 
-    def _howManyInARow(self,counter):
-        counter = counter + 1
+    def _howManyInARow(self,counter,subTotal,isAI):
         if counter == 0:
-            return counter,10
+            counter = counter + 1
+            subTotal = subTotal +10
+            return counter,subTotal
         elif counter == 1:
-            return counter,40
+            counter = counter + 1
+            if not isAI:
+                subTotal = subTotal +70
+            else:
+                subTotal = subTotal +40
+            return counter,subTotal
         elif counter == 2:
-            return counter,50
+            counter = counter + 1
+            if not isAI:
+                subTotal = subTotal +10000
+            else:
+                subTotal = subTotal +200
+            return counter,subTotal
         elif counter == 3:
-            return counter,1000000
+            counter = counter + 1
+            subTotal = subTotal +1000000
+            return counter,subTotal
         elif counter == 4: 
-            return counter,10000000
+            subTotal = subTotal +10000000
+            return counter,subTotal
 
     def _profHeuristic(self):
         self._FakeBoard = [[None for column in range(13)] for row in range(9)]
