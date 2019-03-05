@@ -154,6 +154,9 @@ class Board:
         self._board[secondSegment.getLocationX()][secondSegment.getLocationY()] = secondSegment
 
     def _canRecycleCard(self, card):
+        if card is None:
+            return False
+
         segment1, segment2 = card.getSegments()
         return (len(self._cards) == self._MAX_CARDS_ALLOWED
                 and self._board[segment1.getLocationX()][segment1.getLocationY() - 1] is None 

@@ -79,4 +79,4 @@ class Player:
 
             return self._board.recycleCard(tmp, card_to_recycle)
         
-        return [False, None]
+        return False
