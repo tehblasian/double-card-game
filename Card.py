@@ -8,7 +8,6 @@ class Card:
 
     def __init__(self, state, locationArr):
         self._state = state
-        self._location = ''.join(locationArr)
         self._segments = self._createCardSegments(state, locationArr)
 
         Card._card_id += 1
@@ -22,9 +21,6 @@ class Card:
     def getSegments(self):
         return self._segments
 
-    def setLocation(self, location):
-        self._location = location
-    
     def setState(self, state):
         self._state = state
 
@@ -60,61 +56,62 @@ class Card:
 
         firstSegmentXLocation = self._getXLocationIndexFromLetter(col)
         if state == 1:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
             secondSegmentXLocation = self._getAdjacentXLocation(self._getXLocationIndexFromLetter(col))
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, secondSegmentXLocation, row)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, secondSegmentXLocation, row)
 
         if state == 2:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
             secondSegmentYLocation = self._getYLocationIndexAbove(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
         if state == 3:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
             secondSegmentXLocation = self._getAdjacentXLocation(self._getXLocationIndexFromLetter(col))
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, secondSegmentXLocation, row)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, secondSegmentXLocation, row)
 
         if state == 4:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
             secondSegmentYLocation = self._getYLocationIndexAbove(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
         if state == 5:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
             secondSegmentXLocation = self._getAdjacentXLocation(self._getXLocationIndexFromLetter(col))
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, secondSegmentXLocation, row)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, secondSegmentXLocation, row)
 
         if state == 6:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
             secondSegmentYLocation = self._getYLocationIndexAbove(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, secondSegmentYLocation)
 
         if state == 7:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, row)
             secondSegmentXLocation = self._getAdjacentXLocation(self._getXLocationIndexFromLetter(col))
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, secondSegmentXLocation, row)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, secondSegmentXLocation, row)
 
         if state == 8:
-            first_segment = self.CardSegment(Card._card_id, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
+            first_segment = self.CardSegment(Card._card_id, state, Card.CardColor.RED, Card.CardSymbol.WHITE_DOT, firstSegmentXLocation, row)
             secondSegmentYLocation = self._getYLocationIndexAbove(row)
-            second_segment = self.CardSegment(Card._card_id, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
+            second_segment = self.CardSegment(Card._card_id, state, Card.CardColor.WHITE, Card.CardSymbol.BLACK_DOT, firstSegmentXLocation, secondSegmentYLocation)
+
+        first_segment.setSibling(second_segment)
+        second_segment.setSibling(first_segment)
 
         return [first_segment, second_segment]
     
     def __str__(self):
         return '''
         State: {}
-        Location: {}
         ID: {}
         Segments: \n{}\n{}
-        '''.format(self._state, self._location, self._card_id, str(self._segments[0]), str(self._segments[1]))
+        '''.format(self._state, self._card_id, str(self._segments[0]), str(self._segments[1]))
 
     def __eq__(self, otherCard):
         if otherCard is None:
             return False
 
         return (self._card_id == otherCard._card_id
-                and self._location == otherCard._location
                 and self._state == otherCard._state
                 and self._segments[0] == otherCard._segments[0]
                 and self._segments[1] == otherCard._segments[1])
@@ -142,15 +139,20 @@ class Card:
     #         raise ValueError()
         
     class CardSegment:
-        def __init__(self, parent, color, symbol, locationX, locationY):
+        def __init__(self, parent, state, color, symbol, locationX, locationY):
             self._parent = parent
+            self._state = int(state)
             self._color = color
             self._symbol = symbol
             self._locationX = locationX
             self._locationY = 12 - int(locationY)
+            self._sibling = None
 
         def getParent(self):
             return self._parent
+
+        def getState(self):
+            return self._state
 
         def getColor(self):
             if self._color == Card.CardColor.RED:
@@ -170,27 +172,37 @@ class Card:
         def getLocationY(self):
             return self._locationY
 
+        def getSibling(self):
+            return self._sibling
+
         def setLocation(self, location):
             self._location = location
+
+        def setSibling(self, sibling):
+            self._sibling = sibling
 
         def __str__(self):
             return '''
             Parent ID: {}
+            State: {}
             Color: {}
             Symbol: {}
             X Location: {}
             Y Location: {}
-            '''.format(self._parent, self._color, self._symbol, self._locationX, self._locationY)
+            Sibling: \n\t\t{}
+            '''.format(self._parent, self._state, self._color, self._symbol, self._locationX, self._locationY, (self._sibling._locationX, self._sibling._locationY))
 
         def __eq__(self, otherSegment):
             if otherSegment is None:
                 return False
 
             return (self._parent == otherSegment._parent
+                    and self._state == otherSegment._state
                     and self._color == otherSegment._color
                     and self._symbol == otherSegment._symbol
                     and self._locationX == otherSegment._locationX
-                    and self._locationY == otherSegment._locationY)
+                    and self._locationY == otherSegment._locationY
+                    and self._sibling == otherSegment._sibling)
         
         def __hash__(self):
-            return hash((self._color, self._symbol, self._locationX, self._locationY))
+            return hash((self._state, self._color, self._symbol, self._locationX, self._locationY))

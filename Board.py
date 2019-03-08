@@ -10,6 +10,7 @@ class Board:
     def __init__(self, maxCardsAllowed):
         self._board = [[None for column in range(13)] for row in range(9)]
         self._cards = []
+        self._recycled_cards = []
         self._lastCardPlayed = None
         self._MAX_CARDS_ALLOWED = maxCardsAllowed
         self._winningMarkers = []
@@ -59,7 +60,9 @@ class Board:
 
         if self._validateSegmentPosition(firstSegment,secondSegment) and self._validateSegmentPosition(secondSegment,firstSegment):
             self._addCardOnBoard(firstSegment,secondSegment)
-            if not recycled:
+            if recycled:
+                self._recycled_cards.append(card)
+            elif not recycled:
                 self._cards.append(card)
 
             self._lastCardPlayed = card
@@ -68,17 +71,24 @@ class Board:
         return False
 
     def recycleCard(self, oldCard, newCard):
-        recycled = self.addCard(newCard, recycled=True)
-
-        # if the card was not recycled, revert the card to its original state before modification
-        if not recycled:
-            newCard = oldCard
+        # fail if new card has same state and location as new card
+        if oldCard == newCard:
             return False
-
+  
         # delete the old card from the board
         segment1, segment2 = oldCard.getSegments()
         self._board[segment1.getLocationX()][segment1.getLocationY()] = None
         self._board[segment2.getLocationX()][segment2.getLocationY()] = None
+
+        recycled = self.addCard(newCard, recycled=True)
+
+        # if the card was not recycled, revert the card to its original state before modification
+        # re add the card to the board
+        if not recycled:
+            newCard = oldCard
+            self._board[segment1.getLocationX()][segment1.getLocationY()] = segment1
+            self._board[segment2.getLocationX()][segment2.getLocationY()] = segment2
+            return False
 
         self._lastCardPlayed = newCard
 
@@ -103,20 +113,24 @@ class Board:
 
         first_segment_x_location = indices[first_segment_x_location_letter.upper()]
         second_segment_x_location = indices[second_segment_x_location_letter.upper()]
-
+        # TODO: the cards in self._cards arent all properly getting updated when recycling
         # find the card to recycle 
         card_to_recycle = None
-        for card in self._cards:
+        for card in (self._cards + self._recycled_cards):
             segment1, segment2 = card.getSegments()
-            if (segment1.getLocationX() == first_segment_x_location 
+            if ((segment1.getLocationX() == first_segment_x_location 
                 and segment1.getLocationY() == first_segment_y_location
                 and segment2.getLocationX() == second_segment_x_location
-                and segment2.getLocationY() == second_segment_y_location):
+                and segment2.getLocationY() == second_segment_y_location)
+                or (segment2.getLocationX() == first_segment_x_location 
+                and segment2.getLocationY() == first_segment_y_location
+                and segment1.getLocationX() == second_segment_x_location
+                and segment1.getLocationY() == second_segment_y_location)):
                     card_to_recycle = card
                     break
-        
+
         # check if recycling the card does not leave the board in an illegal state
-        if self._canRecycleCard(card_to_recycle):
+        if self._canRecycleCard(card=card_to_recycle):
             return card_to_recycle
     
         return None
@@ -153,16 +167,40 @@ class Board:
         self._board[firstSegment.getLocationX()][firstSegment.getLocationY()] = firstSegment
         self._board[secondSegment.getLocationX()][secondSegment.getLocationY()] = secondSegment
 
-    def _canRecycleCard(self, card):
-        if card is None:
+    def _canRecycleCard(self, card=None, segment=None):
+        if card is None and segment is None:
             return False
 
-        segment1, segment2 = card.getSegments()
-        return (len(self._cards) == self._MAX_CARDS_ALLOWED
+        if segment is None:
+            segment1, segment2 = card.getSegments()
+        else:
+            segment1 = segment
+            segment2 = segment.getSibling()
+
+        if segment1.getState() % 2 == 0 and segment2.getState() % 2 == 0:
+            return (len(self._cards) == self._MAX_CARDS_ALLOWED
+                and self._board[segment2.getLocationX()][segment2.getLocationY() - 1] is None
+                and segment1 not in self._lastCardPlayed.getSegments()
+                and segment2 not in self._lastCardPlayed.getSegments())
+        else:
+            return (len(self._cards) == self._MAX_CARDS_ALLOWED
                 and self._board[segment1.getLocationX()][segment1.getLocationY() - 1] is None 
                 and self._board[segment2.getLocationX()][segment2.getLocationY() - 1] is None
-                and card != self._lastCardPlayed)
+                and segment1 not in self._lastCardPlayed.getSegments()
+                and segment2 not in self._lastCardPlayed.getSegments())
 
+
+    def _removeCard(self, segment):
+        if segment is None:
+            return False
+
+        sibling = segment._sibling
+        self._board[segment.getLocationX()][segment.getLocationY()] = None
+        self._board[sibling.getLocationX()][sibling.getLocationY()] = None
+
+        return True
+        
+    
     def _horizontalWin(self, firstSegment, secondSegment):
         win = False
         if self._horizontalCheckDots(firstSegment, 'WDOT') or self._horizontalCheckDots(secondSegment, 'BDOT'):
@@ -316,7 +354,34 @@ class Board:
                                 return True
         return False
 
-    def regular_minimax(self, board, depth, maximizing_player, ai_piece):
+    def regular_recycle_minimax(self, board, depth, ai_piece):
+        recyclable = self._getRecyclableCards()
+
+        best_state = None
+        best_position = None
+        best_score = -math.inf
+        card_to_recycle = None
+        for segment in recyclable:
+            b = deepcopy(board)
+            b._removeCard(segment)
+
+            state, position, score = b.regular_minimax(b, depth, True, ai_piece, initial_board_state=board)
+
+            col, row = position
+            if score > best_score:
+                best_score = score
+                best_position = position
+                best_state = state
+                card_to_recycle = segment
+
+        print('Board before recycle')
+        board.printBoard()
+        board._removeCard(card_to_recycle)
+
+        return best_state, best_position, best_score
+
+    
+    def regular_minimax(self, board, depth, maximizing_player, ai_piece, initial_board_state=None):
         available_positions = board._getAvailableCellsVerticalCard()
         
         # return score if depth is reached or node is terminal
@@ -338,11 +403,20 @@ class Board:
                     # created fake board simulate a drop
                     b = deepcopy(board)
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+
                     legal_move = b.addCard(c)
                     if not legal_move:
                         continue
 
-                    new_score = self.regular_minimax(b, depth-1, False, ai_piece)[2]
+                    # ignore moves that leave the board in the same state as the initial (for recycling)
+                    if initial_board_state is not None:
+                        b_hash = hash(b)
+                        ogb_hash = hash(initial_board_state)
+
+                        if b_hash == ogb_hash:
+                            pass
+
+                    new_score = self.regular_minimax(b, depth-1, False, ai_piece, initial_board_state=initial_board_state)[2]
 
                     # if the new score is better than the previous max, update
                     if new_score > best_score:
@@ -360,11 +434,20 @@ class Board:
                 for state in range(1, 9):
                     b = deepcopy(board)
                     c = Card(state, [str(self._getColumnLetterFromIndex(col)), str(lowest_open_cell)])
+
                     legal_move = b.addCard(c)
                     if not legal_move:
                         continue
 
-                    new_score = self.regular_minimax(b, depth-1, True, ai_piece)[2]
+                    # ignore moves that leave the board in the same state as the initial (for recycling)
+                    if initial_board_state is not None:
+                        b_hash = hash(b)
+                        ogb_hash = hash(initial_board_state)
+
+                        if b_hash == ogb_hash:
+                            pass
+                            
+                    new_score = self.regular_minimax(b, depth-1, True, ai_piece, initial_board_state=initial_board_state)[2]
 
                     if new_score < best_score:
                         best_score = new_score
@@ -373,7 +456,7 @@ class Board:
 
             return best_card_state, best_position, best_score    
     
-    def minimax(self, board, depth, alpha, beta, maximizingPlayer, ai_piece, cache):
+    def minimax(self, board, depth, alpha, beta, maximizingPlayer, ai_piece, cache, initial_board_state=None):
         # if depth = 0 or node is a terminal node then
         #     return the heuristic value of node
         # if maximizingPlayer then
@@ -505,6 +588,34 @@ class Board:
 
             return best_card_state, best_position, best_score
 
+    
+    def recycle_minimax(self, board, depth, ai_piece, cache):
+        recyclable = self._getRecyclableCards()
+
+        best_state = None
+        best_position = None
+        best_score = -math.inf
+        card_to_recycle = None
+        for segment in recyclable:
+            b = deepcopy(board)
+            b._removeCard(segment)
+
+            state, position, score = b.minimax(b, depth, -math.inf, math.inf, True, ai_piece, cache, initial_board_state=None)
+
+            # ensure that the best move found is not to play the same card in the same location and state
+            col, row = position
+            if score > best_score:
+                best_score = score
+                best_position = position
+                best_state = state
+                card_to_recycle = segment
+
+        print('Board before recycle')
+        board.printBoard()
+        board._removeCard(card_to_recycle)
+
+        return best_state, best_position, best_score
+    
     def _getColumnLetterFromIndex(self, columnLetter):
         indices = {
             1: 'A',
@@ -856,6 +967,23 @@ class Board:
 
         return None
 
+    def _findTopMostFilledCell(self, col):
+        return 12 - self._findLowestOpenCell(col) + 1
+
+    def _getRecyclableCards(self):
+        recyclable = []
+        for col in range(1,9):
+            topmostFilledCellInColumn = self._findTopMostFilledCell(col)
+            segment = self._board[col][topmostFilledCellInColumn]
+
+            if (isinstance(segment, Card.CardSegment) 
+                and (self._canRecycleCard(segment=segment) or self._canRecycleCard(segment=segment.getSibling()))
+                and segment.getSibling() not in recyclable 
+                and segment not in self._lastCardPlayed.getSegments()):
+                    recyclable.append(segment)
+
+        return recyclable
+
     def _validateVerticalPosition(self, currentCol, lowestCellInCol):
         if self._board[currentCol][12-lowestCellInCol] is None:
             cellAbove = 12-lowestCellInCol-1
@@ -903,40 +1031,26 @@ class Board:
 
     
 if __name__ == '__main__':
-    b = Board(24)
-    c1 = Card(5, ['A', '1'])
-    c2 = Card(5, ['A', '2'])
-    c3 = Card(5, ['A', '3'])
-    c4 = Card(5, ['A', '4'])
-    c5 = Card(5, ['A', '5'])
-    c6 = Card(5, ['A', '6'])
-    c7 = Card(5, ['A', '7'])
-    c8 = Card(5, ['A', '8'])
-    c9 = Card(5, ['A', '9'])
-    c10 = Card(5, ['A', '10'])
-    c11 = Card(5, ['A', '11'])
-    c12 = Card(4, ['C', '1'])
-    c13 = Card(5, ['D', '1'])
-    c14 = Card(4, ['F', '1'])
-    c15 = Card(4, ['H', '1'])
+    b = Board(6)
+    c1 = Card(4, ['A', '1'])
+    c2 = Card(5, ['C', '1'])
+    c3 = Card(3, ['E', '1'])
+    c5 = Card(2, ['B', '1'])
+    c6 = Card(5, ['D', '2'])
+    c7 = Card(6, ['E', '3'])
 
     b.addCard(c1)
     b.addCard(c2)
     b.addCard(c3)
-    b.addCard(c4)
     b.addCard(c5)
     b.addCard(c6)
     b.addCard(c7)
-    b.addCard(c8)
-    b.addCard(c9)
-    b.addCard(c10)
-    b.addCard(c11)
-    b.addCard(c12)
-    b.addCard(c13)
-    b.addCard(c14)
-    b.addCard(c15)
 
     b.printBoard()
 
     print('Open horizontal positions: ', b._getAvailableCellsHorizontalCard())
     print('Open vertical positions: ', b._getAvailableCellsVerticalCard())
+    recyclable = b._getRecyclableCards()
+    print(recyclable)
+    for r in recyclable:
+        print(r)

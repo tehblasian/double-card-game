@@ -63,19 +63,22 @@ class Player:
 
     def _regularMove(self, state, location):
         card = Card(int(state), location)
-        self._cards.append(card)
 
-        return self._board.addCard(card)
+        success = self._board.addCard(card)
+        if success:
+            self._cards.append(card)
+
+        return success
 
     def _recycleMove(self, fromLocationArr, state, toLocationArr):
         card_to_recycle = self._board.getCardToRecycle(fromLocationArr)
-
         if card_to_recycle is not None:
-            print('will recycle the following card:\n{}'.format(str(card_to_recycle)))
+            # print('will recycle the following card:\n{}'.format(str(card_to_recycle)))
 
             tmp = copy.copy(card_to_recycle)
             new_segments = card_to_recycle._createCardSegments(int(state), toLocationArr)
             card_to_recycle._segments = new_segments
+            card_to_recycle.setState(int(state))
 
             return self._board.recycleCard(tmp, card_to_recycle)
         

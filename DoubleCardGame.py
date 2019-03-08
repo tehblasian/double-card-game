@@ -4,7 +4,7 @@ from AI_Player import AI
 
 class DoubleCardGame:
     _MAX_ROUNDS = 60
-    _MAX_CARDS_PER_PLAYER = 12
+    _MAX_CARDS_PER_PLAYER = 3
 
     def __init__(self, board, players):
         self._board = board
@@ -70,11 +70,19 @@ if __name__ == '__main__':
         player2_name = '** NORA FAKOTAKIS **'
 
     board = Board(DoubleCardGame._MAX_CARDS_PER_PLAYER * 2)
+
     player1 = Player(player1_name, player1_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     
     player2 = None
     if int(mode) == 2:
-        player2 = AI(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
+        ai_type = input('\nSelect the AI type:\n1 - Regular \n2 - Tourney\n')
+
+        if int(ai_type) == 1:
+            ai_type = 'REGULAR'
+        elif int(ai_type) == 2:
+            ai_type = 'TOURNEY'
+
+        player2 = AI(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER, ai_type)
     else:
         player2 = Player(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     
