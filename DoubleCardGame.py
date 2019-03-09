@@ -4,7 +4,7 @@ from AI_Player import AI
 
 class DoubleCardGame:
     _MAX_ROUNDS = 60
-    _MAX_CARDS_PER_PLAYER = 3
+    _MAX_CARDS_PER_PLAYER = 12
 
     def __init__(self, board, players):
         self._board = board
@@ -76,13 +76,20 @@ if __name__ == '__main__':
     player2 = None
     if int(mode) == 2:
         ai_type = input('\nSelect the AI type:\n1 - Regular \n2 - Tourney\n')
+        
+        isTraceFile = input('\nDo you want a trace file:\n1 - Yes \n2 - No\n')
 
         if int(ai_type) == 1:
             ai_type = 'REGULAR'
         elif int(ai_type) == 2:
             ai_type = 'TOURNEY'
 
-        player2 = AI(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER, ai_type)
+        if int(isTraceFile)==1:
+            isTraceFile =True
+        else:
+            isTraceFile =False
+
+        player2 = AI(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER,isTraceFile, ai_type)
     else:
         player2 = Player(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER)
     

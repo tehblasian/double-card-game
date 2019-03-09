@@ -361,11 +361,12 @@ class Board:
         best_position = None
         best_score = -math.inf
         card_to_recycle = None
+        traceArray =[0,0]
         for segment in recyclable:
             b = deepcopy(board)
             b._removeCard(segment)
-
-            state, position, score = b.regular_minimax(b, depth, True, ai_piece, initial_board_state=board)
+            traceArraySegment =[0,0]
+            state, position, score,traceArraySegment= b.regular_minimax(b, depth, True, ai_piece,traceArraySegment, initial_board_state=board)
 
             col, row = position
             if score > best_score:
@@ -373,23 +374,26 @@ class Board:
                 best_position = position
                 best_state = state
                 card_to_recycle = segment
+                traceArray=traceArraySegment
 
         print('Board before recycle')
         board.printBoard()
         board._removeCard(card_to_recycle)
 
-        return best_state, best_position, best_score
+        return best_state, best_position, best_score,traceArray
 
     
-    def regular_minimax(self, board, depth, maximizing_player, ai_piece, initial_board_state=None):
+    def regular_minimax(self, board, depth, maximizing_player, ai_piece,traceArray, initial_board_state=None):
         available_positions = board._getAvailableCellsVerticalCard()
         
         # return score if depth is reached or node is terminal
         is_terminal_node = board.hasWinner()
         if depth == 0 or is_terminal_node:
-            score = board.heuristic(ai_piece)
+            traceArray[0] = traceArray[0]+1
+            #score = board.heuristic(ai_piece)
+            score = board._profHeuristic()
 
-            return None, None, score
+            return None, None, score,traceArray
 
         if maximizing_player:
             best_score = -math.inf
@@ -415,16 +419,21 @@ class Board:
 
                         if b_hash == ogb_hash:
                             pass
-
-                    new_score = self.regular_minimax(b, depth-1, False, ai_piece, initial_board_state=initial_board_state)[2]
+                    
+                    minmaxValue = self.regular_minimax(b, depth-1, False, ai_piece,traceArray, initial_board_state=initial_board_state)
+                    new_score = minmaxValue[2]
+                    traceArray = minmaxValue[3]
 
                     # if the new score is better than the previous max, update
                     if new_score > best_score:
                         best_score = new_score
                         best_position = position
                         best_card_state = state
-
-            return best_card_state, best_position, best_score
+            if depth == 1:
+                traceArray.append(best_score)
+            if depth ==2:
+                traceArray[1] = best_score
+            return best_card_state, best_position, best_score,traceArray
         else:
             best_score = math.inf
             best_position = random.choice(available_positions)
@@ -447,14 +456,19 @@ class Board:
                         if b_hash == ogb_hash:
                             pass
                             
-                    new_score = self.regular_minimax(b, depth-1, True, ai_piece, initial_board_state=initial_board_state)[2]
+                    minmaxValue = self.regular_minimax(b, depth-1, True, ai_piece,traceArray, initial_board_state=initial_board_state)
+                    new_score = minmaxValue[2]
+                    traceArray = minmaxValue[3]
 
                     if new_score < best_score:
                         best_score = new_score
                         best_position = position
                         best_card_state = state
-
-            return best_card_state, best_position, best_score    
+            if depth == 1:
+                traceArray.append(best_score)
+            if depth ==2:
+                traceArray[1] = best_score
+            return best_card_state, best_position, best_score,traceArray
     
     def minimax(self, board, depth, alpha, beta, maximizingPlayer, ai_piece, cache, initial_board_state=None):
         # if depth = 0 or node is a terminal node then
@@ -469,7 +483,6 @@ class Board:
         #     for each child of node do
         #         value := min(value, minimax(child, depth − 1, TRUE))
         #     return value
-
         available_positions = board._getAvailableCellsVerticalCard()
 
         # here we will check if the score for this state has already been calculated
@@ -493,10 +506,11 @@ class Board:
             # max player seeks to make alpha bigger
             if entry_type == 'LOWERBOUND':
                 alpha = max(alpha, entry_score)
-            
+
             # min player seeks to make beta smaller
             elif entry_type == 'UPPERBOUND':
                 beta = min(beta, entry_score)
+
             
             # alpha-beta cutoff
             if alpha >= beta:
@@ -531,7 +545,6 @@ class Board:
                     legal_move = b.addCard(c)
                     if not legal_move:
                         continue
-
                     new_score = self.minimax(b, depth-1, alpha, beta, False, ai_piece, cache)[2]
 
                     # if the new score is better than the previous max, update
@@ -551,7 +564,6 @@ class Board:
                 cache[b_hash] = (state, position, new_score, 'LOWERBOUND', depth)
             else:
                 cache[b_hash] = (state, position, new_score, 'EXACT', depth)  
-
             return best_card_state, best_position, best_score
         else:
             best_score = math.inf
