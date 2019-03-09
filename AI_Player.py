@@ -49,7 +49,16 @@ class AI(Player):
         position = None
         score = None
         if self._type == 'REGULAR':
-            state, position, score = self._board.regular_recycle_minimax(self._board, 2, self._marker)
+            state, position, score,traceArray = self._board.regular_recycle_minimax(self._board, 2, self._marker)
+            if self._isTraceFile :
+                file =open("minmax.txt","a")
+                for x in range(0,len(traceArray)): 
+                    if x == 2:
+                        file.write("\n")
+                    file.write(str(round(traceArray[x],1)))
+                    file.write("\n")
+                file.write("\n")
+                file.close
         elif self._type == 'TOURNEY':
             for i in range(1,2):
                 state, position, score = self._board.recycle_minimax(self._board, i, self._marker, self._cache)
