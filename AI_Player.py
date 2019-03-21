@@ -80,7 +80,8 @@ class AI(Player):
         position = None
         score = None
 
-        state, position, score = self._board.minimax(self._board, 2, -math.inf, math.inf, True, self._marker, self._cache)
+        for i in range(0,3):
+            state, position, score = self._board.minimax(self._board, i, -math.inf, math.inf, True, self._marker, self._cache)
 
         return state, position, score
         

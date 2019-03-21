@@ -657,6 +657,24 @@ class Board:
         else :
             return (self._heuristicColors(True) - self._heuristicDots(False))
 
+    def _score_window(self, window: list, marker, opponent_markers):
+        window = [s.getSymbol() if s is not None else None for s in window]
+        score = 0
+        if window.count(marker) == 4:
+            score += 1000000
+
+        if window.count(marker) == 3 and window.count(None) == 1:
+            score += 100000
+        
+        if window.count(marker) == 2 and window.count(None) == 2:
+            score += 2000
+
+        for opponent_marker in opponent_markers:
+            if window.count(opponent_marker) == 3 and window.count(None) == 1:
+                score -= 100000
+
+        return score
+
     def _heuristicDots(self,isAI) :
         total = 0
         total = total + self._horizontalInARowDots('WDOT','BDOT',isAI)
@@ -687,10 +705,8 @@ class Board:
     
     def _horizontalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
-        for y in range(0,12):
+        for y in range(0,12):   
             for x in range(1,6):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterBlack=0
 
@@ -704,13 +720,14 @@ class Board:
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+2][y],blackDot,counterBlack,subTotal,isAI)
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+3][y],blackDot,counterBlack,subTotal,isAI)
 
+                window = [self._board[x][y], self._board[x+1][y], self._board[x+2][y], self._board[x+3][y]]
+                subTotal += self._score_window(window, whiteDot, ['RED', 'WHITE'])
+                subTotal += self._score_window(window, blackDot, ['RED', 'WHITE'])
         return subTotal
     def _verticalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
         for y in range(0,9):
             for x in range(1,9):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterBlack=0
 
@@ -723,14 +740,17 @@ class Board:
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x][y+1],blackDot,counterBlack,subTotal,isAI)
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x][y+2],blackDot,counterBlack,subTotal,isAI)
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x][y+3],blackDot,counterBlack,subTotal,isAI)
+
+                window = [self._board[x][y], self._board[x][y+1], self._board[x][y+2], self._board[x][y+3]]
+                subTotal += self._score_window(window, whiteDot, ['RED', 'WHITE'])
+                subTotal += self._score_window(window, blackDot, ['RED', 'WHITE'])
+
         return subTotal
 
     def _firstDiagonalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
         for y in range(9):
             for x in range(1,6):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterBlack=0
 
@@ -743,13 +763,16 @@ class Board:
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+1][y+1],blackDot,counterBlack,subTotal,isAI)
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+2][y+2],blackDot,counterBlack,subTotal,isAI)
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+3][y+3],blackDot,counterBlack,subTotal,isAI)
+
+                window = [self._board[x][y], self._board[x+1][y+1], self._board[x+2][y+2], self._board[x+3][y+3]]
+                subTotal += self._score_window(window, whiteDot, ['RED', 'WHITE'])
+                subTotal += self._score_window(window, blackDot, ['RED', 'WHITE'])
+                
         return subTotal
     def _secondDiagonalInARowDots(self,whiteDot,blackDot,isAI):
         subTotal=0
         for y in range(3,12):
             for x in range(1,6):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterBlack=0
 
@@ -762,6 +785,11 @@ class Board:
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+1][y-1],blackDot,counterBlack,subTotal,isAI)
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+2][y-2],blackDot,counterBlack,subTotal,isAI)
                 counterBlack,subTotal = self._checkFourInARowDot(self._board[x+3][y-3],blackDot,counterBlack,subTotal,isAI)
+                
+                window = [self._board[x][y], self._board[x+1][y-1], self._board[x+2][y-2], self._board[x+3][y-3]]
+                subTotal += self._score_window(window, whiteDot, ['RED', 'WHITE'])
+                subTotal += self._score_window(window, blackDot, ['RED', 'WHITE'])
+
         return subTotal
     
     def _checkFourInARowDot(self,element,dotType,counter,subTotal,isAI):
@@ -774,7 +802,7 @@ class Board:
             return counter,subTotal
         counter = 0
         if isAI :
-            subTotal = subTotal - 10
+            subTotal = subTotal - 100
         else :
             subTotal = subTotal -5
         return counter,subTotal
@@ -785,8 +813,6 @@ class Board:
         subTotal=0
         for y in range(0,12):
             for x in range(1,6):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterRed=0
 
@@ -799,14 +825,16 @@ class Board:
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+1][y],redColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+2][y],redColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+3][y],redColor,counterRed,subTotal,isAI)
+                
+                window = [self._board[x][y], self._board[x+1][y], self._board[x+2][y], self._board[x+3][y]]
+                subTotal += self._score_window(window, whiteColor, ['BDOT', 'WDOT'])
+                subTotal += self._score_window(window, redColor, ['BDOT', 'WDOT'])
 
         return subTotal
     def _verticalInARowColors(self,whiteColor,redColor,isAI):
         subTotal=0
         for y in range(0,9):
             for x in range(1,9):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterRed=0
 
@@ -819,14 +847,16 @@ class Board:
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x][y+1],whiteColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x][y+2],whiteColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x][y+3],whiteColor,counterRed,subTotal,isAI)
+
+                window = [self._board[x][y], self._board[x][y+1], self._board[x][y+2], self._board[x][y+3]]
+                subTotal += self._score_window(window, whiteColor, ['BDOT', 'WDOT'])
+                subTotal += self._score_window(window, redColor, ['BDOT', 'WDOT'])
         return subTotal
 
     def _firstDiagonalInARowColors(self,whiteColor,redColor,isAI):
         subTotal=0
         for y in range(9):
             for x in range(1,6):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterRed=0
 
@@ -839,13 +869,15 @@ class Board:
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+1][y+1],redColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+2][y+2],redColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+3][y+3],redColor,counterRed,subTotal,isAI)
+
+                window = [self._board[x][y], self._board[x+1][y+1], self._board[x+2][y+2], self._board[x+3][y+3]]
+                subTotal += self._score_window(window, whiteColor, ['BDOT', 'WDOT'])
+                subTotal += self._score_window(window, redColor, ['BDOT', 'WDOT'])
         return subTotal
     def _secondDiagonalInARowColors(self,whiteColor,redColor,isAI):
         subTotal=0
         for y in range(3,12):
             for x in range(1,6):
-                if subTotal >= 1000000:
-                    return subTotal
                 counterWhite=0
                 counterRed=0
 
@@ -858,6 +890,10 @@ class Board:
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+1][y-1],redColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+2][y-2],redColor,counterRed,subTotal,isAI)
                 counterRed,subTotal = self._checkFourInARowColors(self._board[x+3][y-3],redColor,counterRed,subTotal,isAI)
+
+                window = [self._board[x][y], self._board[x+1][y-1], self._board[x+2][y-2], self._board[x+3][y-3]]
+                subTotal += self._score_window(window, whiteColor, ['BDOT', 'WDOT'])
+                subTotal += self._score_window(window, redColor, ['BDOT', 'WDOT'])
         return subTotal
     
     def _checkFourInARowColors(self,element,colors,counter,subTotal,isAI):
@@ -870,7 +906,7 @@ class Board:
             return counter,subTotal
         counter = 0
         if isAI :
-            subTotal = subTotal - 10
+            subTotal = subTotal - 100
         else :
             subTotal = subTotal - 5
         return counter,subTotal
@@ -899,7 +935,7 @@ class Board:
             subTotal = subTotal +1000000
             return counter,subTotal
         elif counter == 4: 
-            subTotal = subTotal +10000000
+            subTotal += 1000000
             return counter,subTotal
 
     def _profHeuristic(self):
