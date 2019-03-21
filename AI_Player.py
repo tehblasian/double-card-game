@@ -72,17 +72,15 @@ class AI(Player):
         return self._board.addCard(card, recycled=True)
 
 
-    def _regular_minimax(self):
-        
+    def _regular_minimax(self):     
         return self._board.regular_minimax(self._board, 2, True, self._marker,[0,0])
 
     def tourneyAI(self):
-        traceArray = [0,0]
         state = None
         position = None
         score = None
 
-        state, position, score,traceArray = self._board.minimax(self._board, 2, -math.inf, math.inf, True, self._marker, self._cache,traceArray,None)
+        state, position, score = self._board.minimax(self._board, 2, -math.inf, math.inf, True, self._marker, self._cache)
 
         return state, position, score
         
