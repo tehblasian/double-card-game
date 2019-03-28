@@ -77,17 +77,16 @@ if __name__ == '__main__':
     if int(mode) == 2:
         ai_type = input('\nSelect the AI type:\n1 - Regular \n2 - Tourney\n')
         
-        isTraceFile = input('\nDo you want a trace file:\n1 - Yes \n2 - No\n')
-
+        isTraceFile = False
         if int(ai_type) == 1:
             ai_type = 'REGULAR'
+            isTraceFile = input('\nDo you want a trace file:\n1 - Yes \n2 - No\n')
+            if int(isTraceFile)==1:
+                isTraceFile =True
+            else:
+                isTraceFile =False
         elif int(ai_type) == 2:
             ai_type = 'TOURNEY'
-
-        if int(isTraceFile)==1:
-            isTraceFile =True
-        else:
-            isTraceFile =False
 
         player2 = AI(player2_name, player2_marker, board, DoubleCardGame._MAX_CARDS_PER_PLAYER,isTraceFile, ai_type)
     else:
