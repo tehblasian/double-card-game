@@ -1,5 +1,6 @@
 import copy
 from enum import Enum
+import re
 from Card import Card
 
 class Player:
@@ -28,7 +29,8 @@ class Player:
         while tries < 2: 
             # get move string from player
             move = input('\n{}! Enter your move: '.format(self._name)).strip()
-            while len(move) != 7 and len(move) != 13:
+            while (not re.match('0\s[1-8]\s[a-hA-H]\s[1-9][0-2]?', move) 
+                and not re.match('[a-hA-H]\s[1-9][0-2]?\s[a-hA-H]\s[1-9][0-2]?\s[1-9]\s[a-hA-H]\s[1-9][0-2]', move)):
                 print('Please enter a valid move string (e.g. 0 5 A 1, F 2 F 3 3 A 2, etc.')
                 move = input('\n{}! Enter your move: '.format(self._name)).strip()
 
