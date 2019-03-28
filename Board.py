@@ -391,7 +391,7 @@ class Board:
         if depth == 0 or is_terminal_node:
             traceArray[0] = traceArray[0]+1
             #score = board.heuristic(ai_piece)
-            score = board._profHeuristic()
+            score = board.heuristic(ai_piece)
 
             return None, None, score,traceArray
 
